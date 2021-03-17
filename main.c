@@ -124,6 +124,13 @@ int replace_defines(
 		char *mapping = get_mapping(defmap, words[i]);
 
 		if (mapping != NULL) {
+			// find final mapping (allows for define in define)
+			char *aux_mapping = mapping;
+			while (aux_mapping != NULL) {
+				mapping = aux_mapping;
+				aux_mapping = get_mapping(defmap, mapping);
+			}
+
 			// printf("mapping found = [%s]\n", mapping);
 
 			char *pos = strstr(buffer, words[i]);
@@ -173,6 +180,8 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 	int start_of_file = 1;
 
 	while (fgets(buffer, MAXBUF, fin) != NULL) {
+		// printf("buffer = [%s]\n", buffer);
+
 		char **words;
 		int words_no;
 		r = extract_words(buffer, &words, &words_no);
@@ -182,7 +191,10 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 			if (!start_of_file) // don't print empty lines at beggining of file
 				fprintf(fout, "%s", buffer);
 		} else if (strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
-			r = insert_item(defmap, words[1], words_no == 3 ? words[2] : "");
+			// TODO not words[2] but end of line
+			buffer[strlen(buffer) - 1] = '\0'; // trim trailing whitespace (\n character)
+			char *mapping = buffer + (MAPPING_OFFSET + strlen(words[1]));
+			r = insert_item(defmap, words[1], words_no >= 3 ? mapping : "");
 		} else if (strcmp(words[0], UNDEF_DIRECTIVE) == 0) {
 			delete_item(defmap, words[1]);
 		} else if (strcmp(words[0], IF_DIRECTIVE) == 0) {
@@ -196,7 +208,7 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 		} else {
 			start_of_file = 0;
 
-			r = replace_defines(defmap, buffer, words, words_no, to_print);
+			replace_defines(defmap, buffer, words, words_no, to_print);
 			fprintf(fout, "%s", to_print);
 		}
 
