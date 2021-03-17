@@ -7,6 +7,7 @@
 #define I_ARG "-I"
 
 #define DEFINE_DIRECTIVE 	"#define"
+#define UNDEF_DIRECTIVE		"#undef"
 #define IF_DIRECTIVE 		"#if"
 #define IFDEF_DIRECTIVE 	"#ifdef"
 #define IFNDEF_DIRECTIVE 	"#ifndef"

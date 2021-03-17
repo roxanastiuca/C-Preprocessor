@@ -170,7 +170,7 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 	char buffer[MAXBUF];
 	char to_print[MAXBUF];
 
-	int directive_phase = 1;
+	int start_of_file = 1;
 
 	while (fgets(buffer, MAXBUF, fin) != NULL) {
 		char **words;
@@ -179,10 +179,12 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 		if (r)	return r;
 
 		if (words_no == 0) {
-			if (!directive_phase) // don't print empty lines in directive phase
+			if (!start_of_file) // don't print empty lines at beggining of file
 				fprintf(fout, "%s", buffer);
 		} else if (strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
 			r = insert_item(defmap, words[1], words_no == 3 ? words[2] : "");
+		} else if (strcmp(words[0], UNDEF_DIRECTIVE) == 0) {
+			delete_item(defmap, words[1]);
 		} else if (strcmp(words[0], IF_DIRECTIVE) == 0) {
 
 		} else if (strcmp(words[0], IFDEF_DIRECTIVE) == 0) {
@@ -192,12 +194,10 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 		} else if (strcmp(words[0], INCLUDE_DIRECTIVE) == 0) {
 
 		} else {
+			start_of_file = 0;
+
 			r = replace_defines(defmap, buffer, words, words_no, to_print);
 			fprintf(fout, "%s", to_print);
-		}
-
-		if (words_no >= 2 && strcmp(words[1], MAIN) == 0) {
-			directive_phase = 0;
 		}
 
 		free_string_vector(words, words_no);
