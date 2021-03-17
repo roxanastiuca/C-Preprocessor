@@ -114,22 +114,27 @@ void end_program(hashmap_t *map, FILE *fout) {
 
 int replace_defines(
 	hashmap_t *defmap,
-	char *buffer, char **words, int words_no,
-	char *to_print
+	char *buffer, char **words, int words_no
+	// char *to_print
 	) {
 	
 	int offset = 0;
+	char to_print[MAXBUF];
+	char *aux = buffer;
+
+	int replaces = 0;
 
 	for (int i = 0; i < words_no; i++) {
 		char *mapping = get_mapping(defmap, words[i]);
 
 		if (mapping != NULL) {
-			// find final mapping (allows for define in define)
-			char *aux_mapping = mapping;
-			while (aux_mapping != NULL) {
-				mapping = aux_mapping;
-				aux_mapping = get_mapping(defmap, mapping);
-			}
+			replaces++;
+			// // find final mapping (allows for define in define)
+			// char *aux_mapping = mapping;
+			// while (aux_mapping != NULL) {
+			// 	mapping = aux_mapping;
+			// 	aux_mapping = get_mapping(defmap, mapping);
+			// }
 
 			// printf("mapping found = [%s]\n", mapping);
 
@@ -161,7 +166,11 @@ int replace_defines(
 	offset += strlen(buffer);
 	to_print[offset] = '\0';
 
-	return 0;
+	// place back into string
+	buffer = aux;
+	memcpy(buffer, to_print, MAXBUF);
+
+	return replaces;
 }
 
 int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
@@ -175,7 +184,7 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 	}
 
 	char buffer[MAXBUF];
-	char to_print[MAXBUF];
+	// char to_print[MAXBUF];
 
 	int start_of_file = 1;
 
@@ -187,6 +196,13 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 		r = extract_words(buffer, &words, &words_no);
 		if (r)	return r;
 
+		if (replace_defines(defmap, buffer, words, words_no)) {
+			// extract the words again
+			free_string_vector(words, words_no);
+			r = extract_words(buffer, &words, &words_no);
+			if (r)	return r;
+		}
+
 		if (words_no == 0) {
 			if (!start_of_file) // don't print empty lines at beggining of file
 				fprintf(fout, "%s", buffer);
@@ -195,6 +211,10 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 			buffer[strlen(buffer) - 1] = '\0'; // trim trailing whitespace (\n character)
 			char *mapping = buffer + (MAPPING_OFFSET + strlen(words[1]));
 			r = insert_item(defmap, words[1], words_no >= 3 ? mapping : "");
+			if (r) {
+				free_string_vector(words, words_no);
+				return r;
+			}
 		} else if (strcmp(words[0], UNDEF_DIRECTIVE) == 0) {
 			delete_item(defmap, words[1]);
 		} else if (strcmp(words[0], IF_DIRECTIVE) == 0) {
@@ -208,8 +228,8 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 		} else {
 			start_of_file = 0;
 
-			replace_defines(defmap, buffer, words, words_no, to_print);
-			fprintf(fout, "%s", to_print);
+			// replace_defines(defmap, buffer, words, words_no);
+			fprintf(fout, "%s", buffer);
 		}
 
 		free_string_vector(words, words_no);
