@@ -188,10 +188,11 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 		if (r)	return r;
 
 		if (words_no == 0) {
-			if (!start_of_file) // don't print empty lines at beggining of file
+			// if (!start_of_file) // don't print empty lines at beggining of file
 				fprintf(fout, "%s", buffer);
 		} else if (strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
 			// TODO not words[2] but end of line
+			fprintf(fout, "\n");
 			buffer[strlen(buffer) - 1] = '\0'; // trim trailing whitespace (\n character)
 			char *mapping = buffer + (MAPPING_OFFSET + strlen(words[1]));
 			r = insert_item(defmap, words[1], words_no >= 3 ? mapping : "");
