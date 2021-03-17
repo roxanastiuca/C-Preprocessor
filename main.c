@@ -112,8 +112,53 @@ void end_program(hashmap_t *map, FILE *fout) {
 	fclose(fout);
 }
 
+int replace_defines(
+	hashmap_t *defmap,
+	char *buffer, char **words, int words_no,
+	char *to_print
+	) {
+	
+	int offset = 0;
+
+	for (int i = 0; i < words_no; i++) {
+		char *mapping = get_mapping(defmap, words[i]);
+
+		if (mapping != NULL) {
+			// printf("mapping found = [%s]\n", mapping);
+
+			char *pos = strstr(buffer, words[i]);
+
+			if (buffer != pos) {
+				// copy everything until that word
+				// printf("bufer dif pos\n");
+				memcpy(to_print + offset, buffer, pos - buffer);
+				offset += (pos - buffer);
+			}
+
+			// printf("to_print 1 = [%s]\n", to_print);
+
+			// copy mapping
+			memcpy(to_print + offset, mapping, strlen(mapping));
+			offset += strlen(mapping);
+
+			// printf("to_print 2 = [%s]\n", to_print);
+
+			// move buffer ahead, after word mapped
+			buffer = pos + strlen(words[i]);
+		}
+	}
+
+	// printf("a mai ramas din buffer: [%s]\n", buffer);
+
+	memcpy(to_print + offset, buffer, strlen(buffer));
+	offset += strlen(buffer);
+	to_print[offset] = '\0';
+
+	return 0;
+}
+
 int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
-	int r;
+	int r = 0;
 	FILE *fin;
 
 	if (input_file == NULL) {
@@ -124,7 +169,6 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 
 	char buffer[MAXBUF];
 	char to_print[MAXBUF];
-	int offset = 0;
 
 	int directive_phase = 1;
 
@@ -135,10 +179,10 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 		if (r)	return r;
 
 		if (words_no == 0) {
-			if (!directive_phase)
+			if (!directive_phase) // don't print empty lines in directive phase
 				fprintf(fout, "%s", buffer);
 		} else if (strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
-			insert_item(defmap, words[1], words_no == 3 ? words[2] : "");
+			r = insert_item(defmap, words[1], words_no == 3 ? words[2] : "");
 		} else if (strcmp(words[0], IF_DIRECTIVE) == 0) {
 
 		} else if (strcmp(words[0], IFDEF_DIRECTIVE) == 0) {
@@ -148,8 +192,8 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 		} else if (strcmp(words[0], INCLUDE_DIRECTIVE) == 0) {
 
 		} else {
-			// replace_defines(buffer, words, words_no, to_print);
-			fprintf(fout, "%s", buffer);
+			r = replace_defines(defmap, buffer, words, words_no, to_print);
+			fprintf(fout, "%s", to_print);
 		}
 
 		if (words_no >= 2 && strcmp(words[1], MAIN) == 0) {
@@ -160,7 +204,7 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 	}
 
 	fclose(fin);
-	return 0;
+	return r;
 }
 
 int main(int argc, char *argv[]) {

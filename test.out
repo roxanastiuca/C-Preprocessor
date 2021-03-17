@@ -1,3 +1,8 @@
 int main() {
-	printf("%d", x);
+	printf("%d", 156);
+	char *string = "roxi";
+	156;
+	1000 = 156;
+	1000;1000;
+	"roxi";
 }
