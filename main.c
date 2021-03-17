@@ -24,6 +24,23 @@ int extract_define(char *str, char **ref_symbol, char **ref_mapping) {
 	return 0;
 }
 
+void trim_whitespace(char *str) {
+	char aux[MAXBUF];
+	memcpy(aux, str, strlen(str) + 1);
+
+	char *start = aux;
+	while (isspace(*start))
+		start++;
+
+	int i = strlen(start) - 1;
+	while (i > 0 && isspace(start[i]))
+		i--;
+
+	start[i] == '\0';
+
+	memcpy(str, start, strlen(start));
+}
+
 int extract_words(char *str, char ***ref_words, int *words_no) {
 	// Copy into another buffer because strtok destroys original string.
 	char buffer[MAXBUF];
@@ -117,6 +134,11 @@ int replace_defines(
 	char *buffer, char **words, int words_no
 	// char *to_print
 	) {
+
+	// corner cases where we don't replace:
+	if (words_no >= 1 && strcmp(words[0], UNDEF_DIRECTIVE) == 0) {
+		return 0;
+	}
 	
 	int offset = 0;
 	char to_print[MAXBUF];
@@ -173,6 +195,29 @@ int replace_defines(
 	return replaces;
 }
 
+int handle_define(hashmap_t *defmap, char *buffer, char **words, int words_no) {
+	// printf("buffer = [%s]\n", buffer);
+
+	char mapping[MAXBUF];
+
+	if (words_no >= 3) {
+		int offset = MAPPING_OFFSET + strlen(words[1]);
+		memcpy(mapping, buffer + offset, strlen(buffer + offset) + 1);
+		mapping[strlen(buffer + offset) - 1] = '\0';
+		trim_whitespace(mapping);
+	} else {
+		mapping[0] = '\0';
+	}
+
+	// printf("mapping = [%s]\n", mapping);
+
+	int r = insert_item(defmap, words[1], mapping);
+	return r;
+
+	// buffer[strlen(buffer) - 1] = '\0'; // trim trailing whitespace (\n character)
+	// 		char *mapping = buffer + (MAPPING_OFFSET + strlen(words[1]));
+}
+
 int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 	int r = 0;
 	FILE *fin;
@@ -208,9 +253,7 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 				fprintf(fout, "%s", buffer);
 		} else if (strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
 			// fprintf(fout, "\n");
-			buffer[strlen(buffer) - 1] = '\0'; // trim trailing whitespace (\n character)
-			char *mapping = buffer + (MAPPING_OFFSET + strlen(words[1]));
-			r = insert_item(defmap, words[1], words_no >= 3 ? mapping : "");
+			r = handle_define(defmap, buffer, words, words_no);
 			if (r) {
 				free_string_vector(words, words_no);
 				return r;
