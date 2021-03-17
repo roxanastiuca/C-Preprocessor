@@ -1,5 +1,3 @@
-// ssh test
-
 #include "utils.h"
 
 void free_string_vector(char **vect, int len) {
