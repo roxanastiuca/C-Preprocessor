@@ -24,7 +24,7 @@ int extract_define(char *str, char **ref_symbol, char **ref_mapping) {
 	return 0;
 }
 
-void trim_whitespace(char *str) {
+void trim_whitespace(char *str) { // :) and backslash
 	char aux[MAXBUF];
 	memcpy(aux, str, strlen(str) + 1);
 
@@ -33,12 +33,13 @@ void trim_whitespace(char *str) {
 		start++;
 
 	int i = strlen(start) - 1;
-	while (i > 0 && isspace(start[i]))
+	while (i > 0 && (isspace(start[i])))
 		i--;
 
 	start[i] == '\0';
 
-	memcpy(str, start, strlen(start));
+	// printf("start = [%s]\n", start);
+	memcpy(str, start, strlen(start) + 1);
 }
 
 int extract_words(char *str, char ***ref_words, int *words_no) {
@@ -195,7 +196,12 @@ int replace_defines(
 	return replaces;
 }
 
-int handle_define(hashmap_t *defmap, char *buffer, char **words, int words_no) {
+int handle_define(
+	FILE *fin,
+	hashmap_t *defmap,
+	char *buffer,
+	char **words, int words_no
+	) {
 	// printf("buffer = [%s]\n", buffer);
 
 	char mapping[MAXBUF];
@@ -205,6 +211,24 @@ int handle_define(hashmap_t *defmap, char *buffer, char **words, int words_no) {
 		memcpy(mapping, buffer + offset, strlen(buffer + offset) + 1);
 		mapping[strlen(buffer + offset) - 1] = '\0';
 		trim_whitespace(mapping);
+
+		while (buffer[strlen(buffer) - 2] == '\\') {
+			// printf("multiline define\n");
+			fgets(buffer, MAXBUF, fin);
+
+			char aux[MAXBUF];
+			memcpy(aux, buffer, MAXBUF);
+
+			aux[strlen(aux) - 1] = '\0';
+			// printf("aux = [%s]\n", aux);
+			trim_whitespace(aux);
+
+			// printf("buffer after trim = [%s]\n", aux);
+			mapping[strlen(mapping) - 1] = '\0';
+			strcat(mapping, " ");
+			strcat(mapping, aux);
+			// printf("mapping = [%s]\n", mapping);
+		}
 	} else {
 		mapping[0] = '\0';
 	}
@@ -253,7 +277,7 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 				fprintf(fout, "%s", buffer);
 		} else if (strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
 			// fprintf(fout, "\n");
-			r = handle_define(defmap, buffer, words, words_no);
+			r = handle_define(fin, defmap, buffer, words, words_no);
 			if (r) {
 				free_string_vector(words, words_no);
 				return r;
