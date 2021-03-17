@@ -1,0 +1,6 @@
+#define NMAX 1000
+#define FISIER
+
+int main() {
+	printf("%d", x);
+}
