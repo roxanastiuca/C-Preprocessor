@@ -279,7 +279,7 @@ int preprocess_file(hashmap_t *defmap, FILE *fin, FILE *fout, int condition) {
 	int start_of_file = 1;
 	int stop = 0;
 
-	while (fgets(buffer, MAXBUF, fin) != NULL && !stop) {
+	while (!stop && fgets(buffer, MAXBUF, fin) != NULL) {
 		char **words;
 		int words_no;
 		r = extract_words(buffer, &words, &words_no);
@@ -296,8 +296,7 @@ int preprocess_file(hashmap_t *defmap, FILE *fin, FILE *fout, int condition) {
 			if (!start_of_file) // don't print empty lines at beggining of file
 				fprintf(fout, "%s", buffer);
 		} else if (words[0][0] == '#') {
-			if (strcmp(words[0], ENDIF_DIRECTIVE) == 0)
-				stop = 1;
+			if (strcmp(words[0], ENDIF_DIRECTIVE) == 0)		stop = 1;
 			r = handle_directive(fin, fout, defmap, buffer, words, words_no, &condition);
 			if(r)	stop = 1;
 		} else {
@@ -306,29 +305,6 @@ int preprocess_file(hashmap_t *defmap, FILE *fin, FILE *fout, int condition) {
 				fprintf(fout, "%s", buffer);
 			}
 		}
-
-		// if (words_no == 0) {
-		// 	if (!start_of_file) // don't print empty lines at beggining of file
-		// 		fprintf(fout, "%s", buffer);
-		// } else if (strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
-		// 	r = handle_define(fin, defmap, buffer, words, words_no);
-		// 	if (r) {
-		// 		free_string_vector(words, words_no);
-		// 		return r;
-		// 	}
-		// } else if (strcmp(words[0], UNDEF_DIRECTIVE) == 0) {
-		// 	delete_item(defmap, words[1]);
-		// } else if (strcmp(words[0], IF_DIRECTIVE) == 0) {
-		// 	int cond = (strcmp(words[1], "0") == 0) ? 0 : 1;
-		// 	r = preprocess_file(defmap, fin, fout, cond);
-		// 	if (r) {
-		// 		free_string_vector(words, words_no);
-		// 		return r;
-		// 	}
-		// } else {
-		// 	start_of_file = 0;
-		// 	fprintf(fout, "%s", buffer);
-		// }
 
 		free_string_vector(words, words_no);
 	}
