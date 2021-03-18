@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "map.h"
@@ -17,8 +18,8 @@
 #define IFNDEF_DIRECTIVE 	"#ifndef"
 #define INCLUDE_DIRECTIVE 	"#include"
 
-#define DELIMLIST "\t []{}<>=+-*/%!&|^.,:;()\\\n\""
+#define DELIMLIST "\t []{}<>=+-*/%!&|^,:;()\\\n\""
 
 #define MAXBUF 257
-#define WORDSMIN 4
+#define SIZEMIN 4
 #define MAPPING_OFFSET 9

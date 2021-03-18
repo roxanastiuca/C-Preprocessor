@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-
-#define ENOMEM 12
+#include <errno.h>
 
 typedef struct node {
 	char *symbol;
