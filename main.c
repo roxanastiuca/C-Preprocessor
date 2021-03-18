@@ -158,10 +158,13 @@ int replace_defines(
 	) {
 
 	// corner cases where we don't replace:
-	if (words_no >= 1 && strcmp(words[0], UNDEF_DIRECTIVE) == 0) {
+	if (words_no >= 1
+		&& (strcmp(words[0], UNDEF_DIRECTIVE) == 0
+		|| strcmp(words[0], IFDEF_DIRECTIVE) == 0
+		|| strcmp(words[0], IFNDEF_DIRECTIVE) == 0)) {
 		return 0;
 	}
-	
+
 	int offset = 0;
 	char to_print[MAXBUF];
 	char *buffer_copy = buffer;
@@ -253,7 +256,7 @@ int handle_directive(
 	int *condition
 	) {
 
-	int r;
+	int r = 0;
 
 	if (*condition && strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
 		r = handle_define(fin, defmap, buffer, words, words_no);
@@ -263,14 +266,19 @@ int handle_directive(
 	} else if (*condition && strcmp(words[0], IF_DIRECTIVE) == 0) {
 		int cond = (strcmp(words[1], "0") == 0) ? 0 : 1;
 		r = preprocess_file(defmap, fin, fout, cond);
-		if (r)	return r;
 	} else if (strcmp(words[0], ELSE_DIRECTIVE) == 0) {
 		*condition = *condition ? 0 : 1; 
 	} else if (strcmp(words[0], ELIF_DIRECTIVE) == 0) {
 		*condition = *condition ? 0 : (strcmp(words[1], "0") == 0) ? 0 : 1;
+	} else if (*condition && strcmp(words[0], IFDEF_DIRECTIVE) == 0) {
+		int cond = (get_mapping(defmap, words[1]) == NULL) ? 0 : 1;
+		r = preprocess_file(defmap, fin, fout, cond);
+	} else if (*condition && strcmp(words[0], IFNDEF_DIRECTIVE) == 0) {
+		int cond = (get_mapping(defmap, words[1]) != NULL) ? 0 : 1;
+		r = preprocess_file(defmap, fin, fout, cond);
 	}
 
-	return 0;
+	return r;
 }
 
 int preprocess_file(hashmap_t *defmap, FILE *fin, FILE *fout, int condition) {
