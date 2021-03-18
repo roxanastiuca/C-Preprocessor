@@ -21,5 +21,5 @@ int insert_item(hashmap_t *map, char *symbol, char *mapping);
 int delete_item(hashmap_t *map, char *symbol);
 char *get_mapping(hashmap_t *map, char *symbol);
 
-// DEBUG ONLY
+/* DEBUG ONLY */
 void print_map(hashmap_t *map);

@@ -53,7 +53,7 @@ int update_item(list_t item, char *mapping) {
 int insert_item(hashmap_t* map, char *symbol, char *mapping) {
 	list_t last_item = NULL, item = map->items;
 
-	// Check if symbol already exists. Update it if so.
+	/* Check if symbol already exists. Update it if so. */
 	for (; item != NULL; last_item = item, item = item->next) {
 		if (strcmp(symbol, item->symbol) == 0) {
 			int r = update_item(item, mapping);
@@ -65,9 +65,9 @@ int insert_item(hashmap_t* map, char *symbol, char *mapping) {
 	if (!new_item)	return ENOMEM;
 
 	if (last_item == NULL) {
-		map->items = new_item; // First insertion in list.
+		map->items = new_item; /* First insertion in list. */
 	} else {
-		last_item->next = new_item; // Insertion at end of list.
+		last_item->next = new_item; /* Insertion at end of list. */
 	}
 
 	map->items_no++;
@@ -79,7 +79,7 @@ int insert_item(hashmap_t* map, char *symbol, char *mapping) {
 int delete_item(hashmap_t* map, char *symbol) {
 	list_t last_item = NULL, item = map->items;
 
-	// Search for symbol.
+	/* Search for symbol. */
 	for (; item != NULL; last_item = item, item = item->next) {
 		if (strcmp(symbol, item->symbol) == 0) {
 			break;
@@ -87,11 +87,11 @@ int delete_item(hashmap_t* map, char *symbol) {
 	}
 
 	if (item == NULL) {
-		return -1; // item not found;
+		return -1; /* item not found; */
 	}
 
 	if (last_item == NULL) {
-		map->items = item->next; // Item is first in list.
+		map->items = item->next; /* Item is first in list. */
 	} else {
 		last_item->next = item->next;
 	}
@@ -106,7 +106,9 @@ int delete_item(hashmap_t* map, char *symbol) {
 }
 
 char* get_mapping(hashmap_t *map, char *symbol) {
-	for (list_t item = map->items; item != NULL; item = item->next) {
+	list_t item;
+
+	for (item = map->items; item != NULL; item = item->next) {
 		if (strcmp(symbol, item->symbol) == 0) {
 			return item->mapping;
 		}
@@ -130,11 +132,12 @@ void free_hashmap(hashmap_t *map) {
 	free(map);
 }
 
-// DEBUG ONLY
+/* DEBUG ONLY */
 #include <stdio.h>
 void print_map(hashmap_t *map) {
 	printf("map:\n");
-	for (list_t item = map->items; item != NULL; item = item->next) {
+	list_t item;
+	for (item = map->items; item != NULL; item = item->next) {
 		printf("[%s:%s]\n", item->symbol, item->mapping);
 	}
 }
