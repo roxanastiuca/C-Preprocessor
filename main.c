@@ -130,6 +130,27 @@ void end_program(hashmap_t *map, FILE *fout) {
 	fclose(fout);
 }
 
+int between_quotations(char *buffer, char *pos) {
+	// printf("buffer = [%s], pos = [%s]\n", buffer, pos);
+
+	char *left_mark = strchr(buffer, '\"');
+
+	if (left_mark == NULL) {
+		return 0;
+	}
+
+	char *aux = left_mark;
+	int marks_no = 0;
+
+	while (aux != NULL && aux < pos) {
+		marks_no++;
+		left_mark = aux;
+		aux = strchr(aux + 1, '\"');
+	}
+
+	return (marks_no % 2 == 1);
+}
+
 int replace_defines(
 	hashmap_t *defmap,
 	char *buffer, char **words, int words_no
@@ -143,15 +164,16 @@ int replace_defines(
 	
 	int offset = 0;
 	char to_print[MAXBUF];
-	char *aux = buffer;
+	char *buffer_copy = buffer;
 
 	int replaces = 0;
 
 	for (int i = 0; i < words_no; i++) {
+		// printf("word = [%s]\n", words[i]);
+
 		char *mapping = get_mapping(defmap, words[i]);
 
 		if (mapping != NULL) {
-			replaces++;
 			// // find final mapping (allows for define in define)
 			// char *aux_mapping = mapping;
 			// while (aux_mapping != NULL) {
@@ -170,16 +192,25 @@ int replace_defines(
 				offset += (pos - buffer);
 			}
 
-			// printf("to_print 1 = [%s]\n", to_print);
+			if (!between_quotations(buffer_copy, pos)) {
+				// copy mapping
+				memcpy(to_print + offset, mapping, strlen(mapping));
+				offset += strlen(mapping);
+			} else {
+				// don't replace if is between "symbol"
+				memcpy(to_print + offset, words[i], strlen(words[i]));
+				offset += strlen(words[i]);
+			}
 
-			// copy mapping
-			memcpy(to_print + offset, mapping, strlen(mapping));
-			offset += strlen(mapping);
+			// printf("to_print 1 = [%s]\n", to_print);
 
 			// printf("to_print 2 = [%s]\n", to_print);
 
 			// move buffer ahead, after word mapped
 			buffer = pos + strlen(words[i]);
+			// printf("after move = [%s]\n", buffer);
+
+			replaces++;
 		}
 	}
 
@@ -190,7 +221,7 @@ int replace_defines(
 	to_print[offset] = '\0';
 
 	// place back into string
-	buffer = aux;
+	buffer = buffer_copy;
 	memcpy(buffer, to_print, MAXBUF);
 
 	return replaces;
