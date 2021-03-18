@@ -277,8 +277,9 @@ int preprocess_file(hashmap_t *defmap, FILE *fin, FILE *fout, int condition) {
 	char buffer[MAXBUF];
 
 	int start_of_file = 1;
+	int stop = 0;
 
-	while (fgets(buffer, MAXBUF, fin) != NULL) {
+	while (fgets(buffer, MAXBUF, fin) != NULL && !stop) {
 		char **words;
 		int words_no;
 		r = extract_words(buffer, &words, &words_no);
@@ -296,8 +297,9 @@ int preprocess_file(hashmap_t *defmap, FILE *fin, FILE *fout, int condition) {
 				fprintf(fout, "%s", buffer);
 		} else if (words[0][0] == '#') {
 			if (strcmp(words[0], ENDIF_DIRECTIVE) == 0)
-				return 0;
+				stop = 1;
 			r = handle_directive(fin, fout, defmap, buffer, words, words_no, &condition);
+			if(r)	stop = 1;
 		} else {
 			if (condition) {
 				start_of_file = 0;
