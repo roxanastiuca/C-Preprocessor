@@ -18,7 +18,7 @@
 #define IFNDEF_DIRECTIVE 	"#ifndef"
 #define INCLUDE_DIRECTIVE 	"#include"
 
-#define DELIMLIST "\t []{}<>=+-*/%!&|^,:;()\\\n\""
+#define DELIMLIST "\t []{}<>=+-*%!&|^,:;()\\\n\""
 
 #define MAXBUF 257
 #define SIZEMIN 4
