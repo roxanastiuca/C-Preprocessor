@@ -83,8 +83,8 @@ int extract_words(char *str, char ***ref_words, int *words_no) {
 	return 0;
 }
 
-int init(int argc, char *argv[], hashmap_t *defmap, char **input_file, FILE **fout) {
-	*input_file = NULL;
+int init(int argc, char *argv[], hashmap_t *defmap, FILE **fin, FILE **fout) {
+	*fin = stdin;
 	*fout = stdout;
 	int r;
 
@@ -112,9 +112,9 @@ int init(int argc, char *argv[], hashmap_t *defmap, char **input_file, FILE **fo
 		} else if (strncmp(argv[i], I_ARG, strlen(I_ARG)) == 0) {
 
 		} else {
-			if (*input_file == NULL) {
+			if (*fin == stdin) {
 				// input file is the first positional argument.
-				*input_file = argv[i];
+				*fin = fopen(argv[i], "rt");
 			} else if (*fout == stdout) {
 				// output file is the second possible positional argument.
 				*fout = fopen(argv[i], "wt");
@@ -125,8 +125,9 @@ int init(int argc, char *argv[], hashmap_t *defmap, char **input_file, FILE **fo
 	return 0;
 }
 
-void end_program(hashmap_t *map, FILE *fout) {
+void end_program(hashmap_t *map, FILE *fin, FILE *fout) {
 	free_hashmap(map);
+	fclose(fin);
 	fclose(fout);
 }
 
@@ -154,7 +155,6 @@ int between_quotations(char *buffer, char *pos) {
 int replace_defines(
 	hashmap_t *defmap,
 	char *buffer, char **words, int words_no
-	// char *to_print
 	) {
 
 	// corner cases where we don't replace:
@@ -169,25 +169,13 @@ int replace_defines(
 	int replaces = 0;
 
 	for (int i = 0; i < words_no; i++) {
-		// printf("word = [%s]\n", words[i]);
-
 		char *mapping = get_mapping(defmap, words[i]);
 
 		if (mapping != NULL) {
-			// // find final mapping (allows for define in define)
-			// char *aux_mapping = mapping;
-			// while (aux_mapping != NULL) {
-			// 	mapping = aux_mapping;
-			// 	aux_mapping = get_mapping(defmap, mapping);
-			// }
-
-			// printf("mapping found = [%s]\n", mapping);
-
 			char *pos = strstr(buffer, words[i]);
 
 			if (buffer != pos) {
 				// copy everything until that word
-				// printf("bufer dif pos\n");
 				memcpy(to_print + offset, buffer, pos - buffer);
 				offset += (pos - buffer);
 			}
@@ -202,19 +190,12 @@ int replace_defines(
 				offset += strlen(words[i]);
 			}
 
-			// printf("to_print 1 = [%s]\n", to_print);
-
-			// printf("to_print 2 = [%s]\n", to_print);
-
 			// move buffer ahead, after word mapped
 			buffer = pos + strlen(words[i]);
-			// printf("after move = [%s]\n", buffer);
 
 			replaces++;
 		}
 	}
-
-	// printf("a mai ramas din buffer: [%s]\n", buffer);
 
 	memcpy(to_print + offset, buffer, strlen(buffer));
 	offset += strlen(buffer);
@@ -233,7 +214,6 @@ int handle_define(
 	char *buffer,
 	char **words, int words_no
 	) {
-	// printf("buffer = [%s]\n", buffer);
 
 	char mapping[MAXBUF];
 
@@ -244,53 +224,61 @@ int handle_define(
 		trim_whitespace(mapping);
 
 		while (buffer[strlen(buffer) - 2] == '\\') {
-			// printf("multiline define\n");
 			fgets(buffer, MAXBUF, fin);
 
 			char aux[MAXBUF];
 			memcpy(aux, buffer, MAXBUF);
 
 			aux[strlen(aux) - 1] = '\0';
-			// printf("aux = [%s]\n", aux);
 			trim_whitespace(aux);
 
-			// printf("buffer after trim = [%s]\n", aux);
 			mapping[strlen(mapping) - 1] = '\0';
 			strcat(mapping, " ");
 			strcat(mapping, aux);
-			// printf("mapping = [%s]\n", mapping);
 		}
 	} else {
 		mapping[0] = '\0';
 	}
 
-	// printf("mapping = [%s]\n", mapping);
-
 	int r = insert_item(defmap, words[1], mapping);
 	return r;
-
-	// buffer[strlen(buffer) - 1] = '\0'; // trim trailing whitespace (\n character)
-	// 		char *mapping = buffer + (MAPPING_OFFSET + strlen(words[1]));
 }
 
-int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
-	int r = 0;
-	FILE *fin;
+int preprocess_file(hashmap_t *defmap, FILE *fin, FILE *fout, int condition);
 
-	if (input_file == NULL) {
-		fin = stdin;
-	} else {
-		fin = fopen(input_file, "rt");
+int handle_directive(
+	FILE *fin, FILE *fout,
+	hashmap_t *defmap,
+	char *buffer, char **words, int words_no,
+	int *condition
+	) {
+
+	int r;
+
+	if (*condition && strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
+		r = handle_define(fin, defmap, buffer, words, words_no);
+		if (r)	return r;
+	} else if (*condition && strcmp(words[0], UNDEF_DIRECTIVE) == 0) {
+		delete_item(defmap, words[1]);
+	} else if (*condition && strcmp(words[0], IF_DIRECTIVE) == 0) {
+		int cond = (strcmp(words[1], "0") == 0) ? 0 : 1;
+		r = preprocess_file(defmap, fin, fout, cond);
+		if (r)	return r;
+	} else if (strcmp(words[0], ELSE_DIRECTIVE) == 0) {
+		*condition = *condition ? 0 : 1; 
 	}
 
+	return 0;
+}
+
+int preprocess_file(hashmap_t *defmap, FILE *fin, FILE *fout, int condition) {
+	int r = 0;
+
 	char buffer[MAXBUF];
-	// char to_print[MAXBUF];
 
 	int start_of_file = 1;
 
 	while (fgets(buffer, MAXBUF, fin) != NULL) {
-		// printf("buffer = [%s]\n", buffer);
-
 		char **words;
 		int words_no;
 		r = extract_words(buffer, &words, &words_no);
@@ -306,34 +294,43 @@ int preprocess_file(hashmap_t *defmap, char *input_file, FILE *fout) {
 		if (words_no == 0) {
 			if (!start_of_file) // don't print empty lines at beggining of file
 				fprintf(fout, "%s", buffer);
-		} else if (strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
-			// fprintf(fout, "\n");
-			r = handle_define(fin, defmap, buffer, words, words_no);
-			if (r) {
-				free_string_vector(words, words_no);
-				return r;
-			}
-		} else if (strcmp(words[0], UNDEF_DIRECTIVE) == 0) {
-			delete_item(defmap, words[1]);
-		} else if (strcmp(words[0], IF_DIRECTIVE) == 0) {
-
-		} else if (strcmp(words[0], IFDEF_DIRECTIVE) == 0) {
-
-		} else if (strcmp(words[0], IFNDEF_DIRECTIVE) == 0) {
-
-		} else if (strcmp(words[0], INCLUDE_DIRECTIVE) == 0) {
-
+		} else if (words[0][0] == '#') {
+			if (strcmp(words[0], ENDIF_DIRECTIVE) == 0)
+				return 0;
+			r = handle_directive(fin, fout, defmap, buffer, words, words_no, &condition);
 		} else {
-			start_of_file = 0;
-
-			// replace_defines(defmap, buffer, words, words_no);
-			fprintf(fout, "%s", buffer);
+			if (condition) {
+				start_of_file = 0;
+				fprintf(fout, "%s", buffer);
+			}
 		}
+
+		// if (words_no == 0) {
+		// 	if (!start_of_file) // don't print empty lines at beggining of file
+		// 		fprintf(fout, "%s", buffer);
+		// } else if (strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
+		// 	r = handle_define(fin, defmap, buffer, words, words_no);
+		// 	if (r) {
+		// 		free_string_vector(words, words_no);
+		// 		return r;
+		// 	}
+		// } else if (strcmp(words[0], UNDEF_DIRECTIVE) == 0) {
+		// 	delete_item(defmap, words[1]);
+		// } else if (strcmp(words[0], IF_DIRECTIVE) == 0) {
+		// 	int cond = (strcmp(words[1], "0") == 0) ? 0 : 1;
+		// 	r = preprocess_file(defmap, fin, fout, cond);
+		// 	if (r) {
+		// 		free_string_vector(words, words_no);
+		// 		return r;
+		// 	}
+		// } else {
+		// 	start_of_file = 0;
+		// 	fprintf(fout, "%s", buffer);
+		// }
 
 		free_string_vector(words, words_no);
 	}
 
-	fclose(fin);
 	return r;
 }
 
@@ -341,23 +338,23 @@ int main(int argc, char *argv[]) {
 	hashmap_t *defmap = new_hashmap();
 	if (!defmap)	return ENOMEM;
 
+	FILE *fin;
 	FILE *fout;
-	char *input_file;
 
-	int r = init(argc, argv, defmap, &input_file, &fout);
+	int r = init(argc, argv, defmap, &fin, &fout);
 	if (r) {
-		end_program(defmap, fout);
+		end_program(defmap, fin, fout);
 		return r;
 	}
 
-	r = preprocess_file(defmap, input_file, fout);
+	r = preprocess_file(defmap, fin, fout, 1);
 	if (r) {
-		end_program(defmap, fout);
+		end_program(defmap, fin, fout);
 		return r;
 	}
 
 	// print_map(defmap);
 
-	end_program(defmap, fout);
+	end_program(defmap, fin, fout);
 	return 0;
 }
