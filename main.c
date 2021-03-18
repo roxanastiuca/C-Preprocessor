@@ -266,6 +266,8 @@ int handle_directive(
 		if (r)	return r;
 	} else if (strcmp(words[0], ELSE_DIRECTIVE) == 0) {
 		*condition = *condition ? 0 : 1; 
+	} else if (strcmp(words[0], ELIF_DIRECTIVE) == 0) {
+		*condition = *condition ? 0 : (strcmp(words[1], "0") == 0) ? 0 : 1;
 	}
 
 	return 0;

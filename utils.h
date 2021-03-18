@@ -11,6 +11,7 @@
 #define UNDEF_DIRECTIVE		"#undef"
 #define IF_DIRECTIVE 		"#if"
 #define ELSE_DIRECTIVE		"#else"
+#define ELIF_DIRECTIVE		"#elif"
 #define ENDIF_DIRECTIVE		"#endif"
 #define IFDEF_DIRECTIVE 	"#ifdef"
 #define IFNDEF_DIRECTIVE 	"#ifndef"
