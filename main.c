@@ -3,12 +3,12 @@
 void free_string_vector(char **vect, int len) {
 	int i;
 
-	for (i = 0; i < len; i++) {
-		if (vect[i] != NULL) {
-			free(vect[i]);
-		}
-	}
-	free(vect);
+	// for (i = 0; i < len; i++) {
+	// 	if (vect[i] != NULL) {
+	// 		free(vect[i]);
+	// 	}
+	// }
+	// free(vect);
 }
 
 int extract_define(char *str, char **ref_symbol, char **ref_mapping) {
@@ -180,10 +180,10 @@ int init(
 }
 
 void end_program(hashmap_t *map, FILE *fin, FILE *fout, char **folders, int folders_no) {
-	free_hashmap(map);
+	// free_hashmap(map);
 	// fclose(fin);
 	// fclose(fout);
-	free_string_vector(folders, folders_no);
+	// free_string_vector(folders, folders_no);
 }
 
 int between_quotations(char *buffer, char *pos) {
