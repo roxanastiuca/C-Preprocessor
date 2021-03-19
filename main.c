@@ -3,12 +3,12 @@
 void free_string_vector(char **vect, int len) {
 	int i;
 
-	// for (i = 0; i < len; i++) {
-	// 	if (vect[i] != NULL) {
-	// 		free(vect[i]);
-	// 	}
-	// }
-	// free(vect);
+	for (i = 0; i < len; i++) {
+		if (vect[i] != NULL) {
+			free(vect[i]);
+		}
+	}
+	free(vect);
 }
 
 int extract_define(char *str, char **ref_symbol, char **ref_mapping) {
@@ -430,12 +430,14 @@ int main(int argc, char *argv[]) {
 	int folders_no;
 
 	int r = init(argc, argv, defmap, &fin, &fout, &folders, &folders_no);
+	printf("trece de init cu r = %d\n", r);
 	if (r) {
 		end_program(defmap, fin, fout, folders, folders_no);
 		return r;
 	}
 
 	r = preprocess_file(defmap, fin, fout, folders, folders_no, 1);
+	printf("trece de preprocess_file cu r = %d\n", r);
 	if (r) {
 		end_program(defmap, fin, fout, folders, folders_no);
 		return r;
