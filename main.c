@@ -185,8 +185,8 @@ int init(
 
 void end_program(hashmap_t *map, FILE *fin, FILE *fout, char **folders, int folders_no) {
 	free_hashmap(map);
-	fclose(fin);
-	fclose(fout);
+	if (fin != NULL)	fclose(fin);
+	if (fout != NULL)	fclose(fout);
 	free_string_vector(folders, folders_no);
 }
 
