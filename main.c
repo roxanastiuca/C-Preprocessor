@@ -30,13 +30,16 @@ int extract_define(char *str, char **ref_symbol, char **ref_mapping) {
 
 void trim_whitespace(char *str) { /* :) and backslash */
 	char aux[MAXBUF];
+	char *start;
+	int i;
+
 	memcpy(aux, str, strlen(str) + 1);
 
-	char *start = aux;
+	start = aux;
 	while (isspace(*start))
 		start++;
 
-	int i = strlen(start) - 1;
+	i = strlen(start) - 1;
 	while (i > 0 && (isspace(start[i])))
 		i--;
 
@@ -45,22 +48,25 @@ void trim_whitespace(char *str) { /* :) and backslash */
 }
 
 int extract_words(char *str, char ***ref_words, int *words_no) {
-	/* Copy into another buffer because strtok destroys original string. */
 	char buffer[MAXBUF];
+	char **words, *token, **words_aux;
+	int capacity, idx;
+
+	/* Copy into another buffer because strtok destroys original string. */
 	memcpy(buffer, str, MAXBUF);
 
-	char **words = (char **) calloc(SIZEMIN, sizeof(char *));
+	words = (char **) calloc(SIZEMIN, sizeof(char *));
 	if (!words) return ENOMEM;
 
-	int capacity = SIZEMIN;
-	int idx = 0;
+	capacity = SIZEMIN;
+	idx = 0;
 
-	char *token = strtok(buffer, DELIMLIST);
+	token = strtok(buffer, DELIMLIST);
 
 	while (token != NULL) {
 		if (idx == capacity) {
 			/* need more space to stock words array */
-			char **words_aux = (char **) realloc(words, (capacity * 2) * sizeof(char*));
+			words_aux = (char **) realloc(words, (capacity * 2) * sizeof(char*));
 			if (words_aux == NULL) {
 				/* free space for words */
 				free_string_vector(words, idx);
@@ -92,21 +98,18 @@ int init(
 	char ***folders, int *folders_no
 	) {
 
-	char *input_file = NULL;
+	char *input_file = NULL, *symbol, *mapping, *output_file, **folders_aux;
+	int r, i, capacity = SIZEMIN;
+
 	*fin = stdin;
 	*fout = stdout;
-	int r;
 
 	*folders = (char **) calloc(SIZEMIN, sizeof(char *));
 	if (!*folders)	return ENOMEM;
 	*folders_no = 1; /* reserve first spot for input file folder/current folder */
-	int capacity = SIZEMIN;
-
-	int i;
 
 	for (i = 1; i < argc; i++) {
 		if (strncmp(argv[i], D_ARG, strlen(D_ARG)) == 0) {
-			char *symbol, *mapping;
 			if (strlen(argv[i]) == strlen(D_ARG)) {
 				r = extract_define(argv[i + 1], &symbol, &mapping); /* -D sym=map */
 				if (r)	return r;
@@ -117,7 +120,6 @@ int init(
 			}
 			insert_item(defmap, symbol, mapping);
 		} else if (strncmp(argv[i], O_ARG, strlen(O_ARG)) == 0) {
-			char *output_file;
 			if (strlen(argv[i]) == strlen(O_ARG)) {
 				output_file = argv[i + 1];
 				i++;
@@ -127,7 +129,7 @@ int init(
 			*fout = fopen(output_file, "wt");
 		} else if (strncmp(argv[i], I_ARG, strlen(I_ARG)) == 0) {
 			if (*folders_no == capacity) {
-				char **folders_aux = (char **) realloc(*folders, (capacity * 2) * sizeof(char*));
+				folders_aux = (char **) realloc(*folders, (capacity * 2) * sizeof(char*));
 				if (folders_aux == NULL)	return ENOMEM;
 				capacity *= 2;
 				*folders = folders_aux;
@@ -191,13 +193,15 @@ void end_program(hashmap_t *map, FILE *fin, FILE *fout, char **folders, int fold
 }
 
 int between_quotations(char *buffer, char *pos) {
-	char *left_mark = strchr(buffer, '\"');
+	char *left_mark, *aux;
+
+	left_mark = strchr(buffer, '\"');
 
 	if (left_mark == NULL) {
 		return 0;
 	}
 
-	char *aux = left_mark;
+	aux = left_mark;
 	int marks_no = 0;
 
 	while (aux != NULL && aux < pos) {
@@ -214,6 +218,10 @@ int replace_defines(
 	char *buffer, char **words, int words_no
 	) {
 
+	int start, offset, replaces, i;
+	char to_print[MAXBUF];
+	char *buffer_copy, *mapping, *pos;
+
 	/* corner cases where we don't replace: */
 	if (words_no >= 1
 		&& (strcmp(words[0], UNDEF_DIRECTIVE) == 0
@@ -223,25 +231,22 @@ int replace_defines(
 		return 0;
 	}
 
-	int start = 0;
+	start = 0;
 
 	/* corner case for define. replace only mapping */
 	if (words_no >= 1 && strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
 		start = 2;
 	}
 
-	int offset = 0;
-	char to_print[MAXBUF];
-	char *buffer_copy = buffer;
-
-	int replaces = 0;
-	int i;
+	offset = 0;
+	buffer_copy = buffer;
+	replaces = 0;
 
 	for (i = start; i < words_no; i++) {
-		char *mapping = get_mapping(defmap, words[i]);
+		mapping = get_mapping(defmap, words[i]);
 
 		if (mapping != NULL) {
-			char *pos = strstr(buffer, words[i]);
+			pos = strstr(buffer, words[i]);
 
 			if (buffer != pos) {
 				/* copy everything until that word */
@@ -285,9 +290,11 @@ int handle_define(
 	) {
 
 	char mapping[MAXBUF];
+	int offset;
+	int r;
 
 	if (words_no >= 3) {
-		int offset = MAPPING_OFFSET + strlen(words[1]);
+		offset = MAPPING_OFFSET + strlen(words[1]);
 		memcpy(mapping, buffer + offset, strlen(buffer + offset) + 1);
 		mapping[strlen(buffer + offset) - 1] = '\0';
 		trim_whitespace(mapping);
@@ -309,20 +316,21 @@ int handle_define(
 		mapping[0] = '\0';
 	}
 
-	int r = insert_item(defmap, words[1], mapping);
+	r = insert_item(defmap, words[1], mapping);
 	return r;
 }
 
 FILE *find_file(char *file, char **folders, int folders_no) {
+	char path[MAXBUF];
+	FILE *fd;
 	int i;
 	
 	for (i = 0; i < folders_no; i++) {
-		char path[MAXBUF];
 		strcpy(path, folders[i]);
 		strcat(path, "/");
 		strcat(path, file);
 
-		FILE *fd = fopen(path, "rt");
+		fd = fopen(path, "rt");
 		if (fd)	return fd;
 	}
 
@@ -340,6 +348,8 @@ int handle_directive(
 	) {
 
 	int r = 0;
+	int cond;
+	FILE *file;
 
 	if (*condition && strcmp(words[0], DEFINE_DIRECTIVE) == 0) {
 		r = handle_define(fin, defmap, buffer, words, words_no);
@@ -347,20 +357,20 @@ int handle_directive(
 	} else if (*condition && strcmp(words[0], UNDEF_DIRECTIVE) == 0) {
 		delete_item(defmap, words[1]);
 	} else if (*condition && strcmp(words[0], IF_DIRECTIVE) == 0) {
-		int cond = (strcmp(words[1], "0") == 0) ? 0 : 1;
+		cond = (strcmp(words[1], "0") == 0) ? 0 : 1;
 		r = preprocess_file(defmap, fin, fout, folders, folders_no, cond);
 	} else if (strcmp(words[0], ELSE_DIRECTIVE) == 0) {
 		*condition = *condition ? 0 : 1; 
 	} else if (strcmp(words[0], ELIF_DIRECTIVE) == 0) {
 		*condition = *condition ? 0 : (strcmp(words[1], "0") == 0) ? 0 : 1;
 	} else if (*condition && strcmp(words[0], IFDEF_DIRECTIVE) == 0) {
-		int cond = (get_mapping(defmap, words[1]) == NULL) ? 0 : 1;
+		cond = (get_mapping(defmap, words[1]) == NULL) ? 0 : 1;
 		r = preprocess_file(defmap, fin, fout, folders, folders_no, cond);
 	} else if (*condition && strcmp(words[0], IFNDEF_DIRECTIVE) == 0) {
-		int cond = (get_mapping(defmap, words[1]) != NULL) ? 0 : 1;
+		cond = (get_mapping(defmap, words[1]) != NULL) ? 0 : 1;
 		r = preprocess_file(defmap, fin, fout, folders, folders_no, cond);
 	} else if (*condition && strcmp(words[0], INCLUDE_DIRECTIVE) == 0) {
-		FILE *file = find_file(words[1], folders, folders_no);
+		file = find_file(words[1], folders, folders_no);
 		if (file == NULL) {
 			return ENOENT;
 		}
@@ -382,13 +392,14 @@ int preprocess_file(
 	int r = 0;
 
 	char buffer[MAXBUF];
+	char **words;
+
+	int words_no;
 
 	int start_of_file = 1;
 	int stop = 0;
 
 	while (!stop && fgets(buffer, MAXBUF, fin) != NULL) {
-		char **words;
-		int words_no;
 		r = extract_words(buffer, &words, &words_no);
 		if (r)	return r;
 
@@ -428,8 +439,9 @@ int main(int argc, char *argv[]) {
 	FILE *fout;
 	char **folders;
 	int folders_no;
+	int r;
 
-	int r = init(argc, argv, defmap, &fin, &fout, &folders, &folders_no);
+	r = init(argc, argv, defmap, &fin, &fout, &folders, &folders_no);
 	if (r) {
 		end_program(defmap, fin, fout, folders, folders_no);
 		return r;
