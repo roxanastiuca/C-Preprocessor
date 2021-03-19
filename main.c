@@ -184,10 +184,10 @@ int init(
 }
 
 void end_program(hashmap_t *map, FILE *fin, FILE *fout, char **folders, int folders_no) {
-	// free_hashmap(map);
-	// fclose(fin);
-	// fclose(fout);
-	// free_string_vector(folders, folders_no);
+	free_hashmap(map);
+	fclose(fin);
+	fclose(fout);
+	free_string_vector(folders, folders_no);
 }
 
 int between_quotations(char *buffer, char *pos) {
@@ -429,16 +429,13 @@ int main(int argc, char *argv[]) {
 	char **folders;
 	int folders_no;
 
-	printf("inainte de init");
 	int r = init(argc, argv, defmap, &fin, &fout, &folders, &folders_no);
-	printf("trece de init cu r = %d\n", r);
 	if (r) {
 		end_program(defmap, fin, fout, folders, folders_no);
 		return r;
 	}
 
 	r = preprocess_file(defmap, fin, fout, folders, folders_no, 1);
-	printf("trece de preprocess_file cu r = %d\n", r);
 	if (r) {
 		end_program(defmap, fin, fout, folders, folders_no);
 		return r;
