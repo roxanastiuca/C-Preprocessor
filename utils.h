@@ -19,6 +19,7 @@
 #define INCLUDE_DIRECTIVE 	"#include"
 
 #define DELIMLIST "\t []{}<>=+-*%!&|^,:;()\\\n\""
+#define SPACE " "
 
 #define MAXBUF 257
 #define SIZEMIN 4
