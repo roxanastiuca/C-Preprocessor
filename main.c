@@ -45,9 +45,7 @@ void trim_whitespace(char *str) { /* :) and backslash */
 		i--;
 	}
 
-
 	memcpy(str, start, strlen(start) + 1);
-
 }
 
 int extract_words(char *str, char ***ref_words, int *words_no) {
@@ -59,7 +57,10 @@ int extract_words(char *str, char ***ref_words, int *words_no) {
 	memcpy(buffer, str, MAXBUF);
 
 	words = (char **) calloc(SIZEMIN, sizeof(char *));
-	if (!words) return ENOMEM;
+	if (!words) {
+		fprintf(stderr, "Not enough memory for words.\n");
+		return ENOMEM;
+	}
 
 	capacity = SIZEMIN;
 	idx = 0;
@@ -73,6 +74,7 @@ int extract_words(char *str, char ***ref_words, int *words_no) {
 			if (words_aux == NULL) {
 				/* free space for words */
 				free_string_vector(words, idx);
+				fprintf(stderr, "Not enough memory to reallocate words.\n");
 				return ENOMEM;
 			}
 			capacity *= 2;
@@ -82,6 +84,7 @@ int extract_words(char *str, char ***ref_words, int *words_no) {
 		words[idx] = (char *) calloc(1 + strlen(token), sizeof(char));
 		if (words[idx] == NULL) {
 			free_string_vector(words, idx);
+			fprintf(stderr, "Not enough memory for word.\n");
 			return ENOMEM;
 		}
 		memcpy(words[idx++], token, strlen(token));
@@ -133,7 +136,10 @@ int init(
 		} else if (strncmp(argv[i], I_ARG, strlen(I_ARG)) == 0) {
 			if (*folders_no == capacity) {
 				folders_aux = (char **) realloc(*folders, (capacity * 2) * sizeof(char*));
-				if (folders_aux == NULL)	return ENOMEM;
+				if (folders_aux == NULL) {
+					fprintf(stderr, "Not enough memory to reallocate folders.\n");
+					return ENOMEM;
+				}
 				capacity *= 2;
 				*folders = folders_aux;
 			}
@@ -146,7 +152,10 @@ int init(
 			}
 
 			(*folders)[*folders_no] = (char *) calloc(1 + strlen(dir), sizeof(char));
-			if ((*folders)[*folders_no] == NULL)	return ENOMEM;
+			if ((*folders)[*folders_no] == NULL) {
+				fprintf(stderr, "Not enough memory for folder.\n");
+				return ENOMEM;
+			}
 
 			memcpy((*folders)[(*folders_no)++], dir, strlen(dir));
 		} else {
@@ -159,7 +168,6 @@ int init(
 				/* output file is the second possible positional argument. */
 				*fout = fopen(argv[i], "wt");
 				if (!*fout)	return ENOENT;
-
 			} else {
 				return EINVAL;
 			}
@@ -168,18 +176,27 @@ int init(
 
 	if (input_file == NULL) {
 		(*folders)[0] = (char *) calloc(2, sizeof(char));
-		if ((*folders)[0] == NULL)	return ENOMEM;
+		if ((*folders)[0] == NULL) {
+			fprintf(stderr, "Not enough memory for folder 0.\n");
+			return ENOMEM;
+		}
 		strcpy((*folders)[0], ".");
 	} else {
 		char *end_of_path = strrchr(input_file, '/');
 		if (end_of_path == NULL) {
 			(*folders)[0] = (char *) calloc(2, sizeof(char));
-			if ((*folders)[0] == NULL)	return ENOMEM;
+			if ((*folders)[0] == NULL) {
+				fprintf(stderr, "Not enough memory for folder 0.\n");
+				return ENOMEM;
+			}
 			strcpy((*folders)[0], ".");
 		} else {
 			*end_of_path = '\0';
 			(*folders)[0] = (char *) calloc(1 + strlen(input_file), sizeof(char));
-			if ((*folders)[0] == NULL)	return ENOMEM;
+			if ((*folders)[0] == NULL) {
+				fprintf(stderr, "Not enough memory for folder 0.\n");
+				return ENOMEM;
+			}
 			strcpy((*folders)[0], input_file);
 		}
 	}
@@ -439,7 +456,10 @@ int main(int argc, char *argv[]) {
 	int folders_no, r;
 
 	defmap = new_hashmap();
-	if (!defmap)	return ENOMEM;
+	if (!defmap) {
+		fprintf(stderr, "Not enough memory for hashmap.\n");
+		return ENOMEM;
+	}
 
 	r = init(argc, argv, defmap, &fin, &fout, &folders, &folders_no);
 	if (r) {

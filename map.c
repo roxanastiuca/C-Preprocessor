@@ -43,7 +43,10 @@ int update_item(list_t item, char *mapping) {
 	free(item->mapping);
 
 	item->mapping = (char *) calloc(1 + strlen(mapping), sizeof(char));
-	if (!item->mapping)	return ENOMEM;
+	if (!item->mapping) {
+		fprintf(stderr, "Not enough memory for mapping.\n");
+		return ENOMEM;
+	}
 
 	memcpy(item->mapping, mapping, 1 + strlen(mapping));
 
@@ -63,7 +66,10 @@ int insert_item(hashmap_t* map, char *symbol, char *mapping) {
 	}
 
 	new_item = new_node(symbol, mapping);
-	if (!new_item)	return ENOMEM;
+	if (!new_item) {
+		fprintf(stderr, "Not enough memory for new hashmap item.\n");
+		return ENOMEM;
+	}
 
 	if (last_item == NULL) {
 		map->items = new_item; /* First insertion in list. */
