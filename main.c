@@ -43,7 +43,7 @@ void trim_whitespace(char *str) { /* :) and backslash */
 
 	i = strlen(start) - 1;
 	while (i > 0 && (isspace(start[i]))) {
-		start[i] = '\0';
+		// start[i] = '\0';
 		i--;
 	}
 	// printf("trim_whitespace, start after trim back = [%s]\n", start);
