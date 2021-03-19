@@ -4,7 +4,9 @@ void free_string_vector(char **vect, int len) {
 	int i;
 
 	for (i = 0; i < len; i++) {
-		free(vect[i]);
+		if (vect[i] != NULL) {
+			free(vect[i]);
+		}
 	}
 	free(vect);
 }
@@ -125,11 +127,7 @@ int init(
 		} else if (strncmp(argv[i], I_ARG, strlen(I_ARG)) == 0) {
 			if (*folders_no == capacity) {
 				char **folders_aux = (char **) realloc(*folders, (capacity * 2) * sizeof(char*));
-				if (folders_aux == NULL) {
-					/* free space for folders */
-					free_string_vector(*folders, *folders_no);
-					return ENOMEM;
-				}
+				if (folders_aux == NULL)	return ENOMEM;
 				capacity *= 2;
 				*folders = folders_aux;
 			}
@@ -143,29 +141,21 @@ int init(
 			}
 
 			(*folders)[*folders_no] = (char *) calloc(1 + strlen(dir), sizeof(char));
-			if ((*folders)[*folders_no] == NULL) {
-				free_string_vector(*folders, *folders_no);
-				return ENOMEM;
-			}
+			if ((*folders)[*folders_no] == NULL)	return ENOMEM;
+
 			memcpy((*folders)[(*folders_no)++], dir, strlen(dir));
 		} else {
 			if (*fin == stdin) {
 				/* input file is the first positional argument. */
 				input_file = argv[i];
 				*fin = fopen(input_file, "rt");
-				if (!*fin) {
-					free_string_vector(*folders, *folders_no);
-					return ENOENT;
-				}
+				if (!*fin)	return ENOENT;
 			} else if (*fout == stdout) {
 				/* output file is the second possible positional argument. */
 				*fout = fopen(argv[i], "wt");
-				if (!*fout) {
-					free_string_vector(*folders, *folders_no);
-					return ENOENT;
-				}
+				if (!*fout)	return ENOENT;
+
 			} else {
-				free_string_vector(*folders, *folders_no);
 				return EINVAL;
 			}
 		}
@@ -191,8 +181,8 @@ int init(
 
 void end_program(hashmap_t *map, FILE *fin, FILE *fout, char **folders, int folders_no) {
 	free_hashmap(map);
-	fclose(fin);
-	fclose(fout);
+	// fclose(fin);
+	// fclose(fout);
 	free_string_vector(folders, folders_no);
 }
 
