@@ -52,6 +52,7 @@ int update_item(list_t item, char *mapping) {
 
 int insert_item(hashmap_t* map, char *symbol, char *mapping) {
 	list_t last_item = NULL, item = map->items;
+	list_t new_item;
 
 	/* Check if symbol already exists. Update it if so. */
 	for (; item != NULL; last_item = item, item = item->next) {
@@ -61,7 +62,7 @@ int insert_item(hashmap_t* map, char *symbol, char *mapping) {
 		}
 	}
 
-	list_t new_item = new_node(symbol, mapping);
+	new_item = new_node(symbol, mapping);
 	if (!new_item)	return ENOMEM;
 
 	if (last_item == NULL) {
@@ -132,12 +133,12 @@ void free_hashmap(hashmap_t *map) {
 	free(map);
 }
 
-/* DEBUG ONLY */
-#include <stdio.h>
-void print_map(hashmap_t *map) {
-	printf("map:\n");
-	list_t item;
-	for (item = map->items; item != NULL; item = item->next) {
-		printf("[%s:%s]\n", item->symbol, item->mapping);
-	}
-}
+// /* DEBUG ONLY */
+// #include <stdio.h>
+// void print_map(hashmap_t *map) {
+// 	printf("map:\n");
+// 	list_t item;
+// 	for (item = map->items; item != NULL; item = item->next) {
+// 		printf("[%s:%s]\n", item->symbol, item->mapping);
+// 	}
+// }

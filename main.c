@@ -43,7 +43,7 @@ void trim_whitespace(char *str) { /* :) and backslash */
 	while (i > 0 && (isspace(start[i])))
 		i--;
 
-	start[i] == '\0';
+	start[i] = '\0';
 	memcpy(str, start, strlen(start) + 1);
 }
 
@@ -98,7 +98,7 @@ int init(
 	char ***folders, int *folders_no
 	) {
 
-	char *input_file = NULL, *symbol, *mapping, *output_file, **folders_aux;
+	char *input_file = NULL, *symbol, *mapping, *output_file, **folders_aux, *dir;
 	int r, i, capacity = SIZEMIN;
 
 	*fin = stdin;
@@ -135,7 +135,6 @@ int init(
 				*folders = folders_aux;
 			}
 
-			char *dir;
 			if (strlen(argv[i]) == strlen(I_ARG)) {
 				dir = argv[i + 1];
 				i++;
@@ -194,6 +193,7 @@ void end_program(hashmap_t *map, FILE *fin, FILE *fout, char **folders, int fold
 
 int between_quotations(char *buffer, char *pos) {
 	char *left_mark, *aux;
+	int marks_no = 0;
 
 	left_mark = strchr(buffer, '\"');
 
@@ -202,7 +202,6 @@ int between_quotations(char *buffer, char *pos) {
 	}
 
 	aux = left_mark;
-	int marks_no = 0;
 
 	while (aux != NULL && aux < pos) {
 		marks_no++;
@@ -290,6 +289,7 @@ int handle_define(
 	) {
 
 	char mapping[MAXBUF];
+	char aux[MAXBUF];
 	int offset;
 	int r;
 
@@ -301,15 +301,13 @@ int handle_define(
 
 		while (buffer[strlen(buffer) - 2] == '\\') {
 			fgets(buffer, MAXBUF, fin);
-
-			char aux[MAXBUF];
 			memcpy(aux, buffer, MAXBUF);
 
 			aux[strlen(aux) - 1] = '\0';
 			trim_whitespace(aux);
 
 			mapping[strlen(mapping) - 1] = '\0';
-			strcat(mapping, " ");
+			strcat(mapping, SPACE);
 			strcat(mapping, aux);
 		}
 	} else {
@@ -432,14 +430,13 @@ int preprocess_file(
 }
 
 int main(int argc, char *argv[]) {
-	hashmap_t *defmap = new_hashmap();
-	if (!defmap)	return ENOMEM;
-
-	FILE *fin;
-	FILE *fout;
+	hashmap_t *defmap;
+	FILE *fin, *fout;
 	char **folders;
-	int folders_no;
-	int r;
+	int folders_no, r;
+
+	defmap = new_hashmap();
+	if (!defmap)	return ENOMEM;
 
 	r = init(argc, argv, defmap, &fin, &fout, &folders, &folders_no);
 	if (r) {
