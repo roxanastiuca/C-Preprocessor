@@ -98,6 +98,7 @@ int init(
 	int r;
 
 	*folders = (char **) calloc(SIZEMIN, sizeof(char *));
+	if (!*folders)	return ENOMEM;
 	*folders_no = 1; /* reserve first spot for input file folder/current folder */
 	int capacity = SIZEMIN;
 
@@ -163,15 +164,18 @@ int init(
 
 	if (input_file == NULL) {
 		(*folders)[0] = (char *) calloc(2, sizeof(char));
+		if ((*folders)[0] == NULL)	return ENOMEM;
 		strcpy((*folders)[0], ".");
 	} else {
 		char *end_of_path = strrchr(input_file, '/');
 		if (end_of_path == NULL) {
 			(*folders)[0] = (char *) calloc(2, sizeof(char));
+			if ((*folders)[0] == NULL)	return ENOMEM;
 			strcpy((*folders)[0], ".");
 		} else {
 			*end_of_path = '\0';
 			(*folders)[0] = (char *) calloc(1 + strlen(input_file), sizeof(char));
+			if ((*folders)[0] == NULL)	return ENOMEM;
 			strcpy((*folders)[0], input_file);
 		}
 	}
