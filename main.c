@@ -164,6 +164,9 @@ int init(
 					free_string_vector(*folders, *folders_no);
 					return ENOENT;
 				}
+			} else {
+				free_string_vector(*folders, *folders_no);
+				return EINVAL;
 			}
 		}
 	}
