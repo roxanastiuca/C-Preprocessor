@@ -34,17 +34,24 @@ void trim_whitespace(char *str) { /* :) and backslash */
 	int i;
 
 	memcpy(aux, str, strlen(str) + 1);
+	// printf("trim_whitespace, aux = [%s]\n", aux);
 
 	start = aux;
 	while (isspace(*start))
 		start++;
+	// printf("trim_whitespace, start = [%s]\n", start);
 
 	i = strlen(start) - 1;
-	while (i > 0 && (isspace(start[i])))
+	while (i > 0 && (isspace(start[i]))) {
+		start[i] = '\0';
 		i--;
+	}
+	// printf("trim_whitespace, start after trim back = [%s]\n", start);
 
-	start[i] = '\0';
+
 	memcpy(str, start, strlen(start) + 1);
+	// printf("trim_whitespace, str = [%s]\n", str);
+
 }
 
 int extract_words(char *str, char ***ref_words, int *words_no) {
@@ -243,23 +250,24 @@ int replace_defines(
 
 	for (i = start; i < words_no; i++) {
 		mapping = get_mapping(defmap, words[i]);
+		// printf("symbol = [%s], mapping = [%s]\n", words[i], mapping);
 
 		if (mapping != NULL) {
 			pos = strstr(buffer, words[i]);
 
 			if (buffer != pos) {
 				/* copy everything until that word */
-				memcpy(to_print + offset, buffer, pos - buffer);
+				memcpy(to_print + offset, buffer, pos - buffer + 1);
 				offset += (pos - buffer);
 			}
 
 			if (!between_quotations(buffer_copy, pos)) {
 				/* copy mapping */
-				memcpy(to_print + offset, mapping, strlen(mapping));
+				memcpy(to_print + offset, mapping, strlen(mapping) + 1);
 				offset += strlen(mapping);
 			} else {
 				/* don't replace if is between "symbol" */
-				memcpy(to_print + offset, words[i], strlen(words[i]));
+				memcpy(to_print + offset, words[i], strlen(words[i]) + 1);
 				offset += strlen(words[i]);
 			}
 
@@ -269,8 +277,9 @@ int replace_defines(
 			replaces++;
 		}
 	}
+	// printf("to_print = [%s]\n", to_print);
 
-	memcpy(to_print + offset, buffer, strlen(buffer));
+	memcpy(to_print + offset, buffer, strlen(buffer) + 1);
 	offset += strlen(buffer);
 	to_print[offset] = '\0';
 
@@ -296,8 +305,11 @@ int handle_define(
 	if (words_no >= 3) {
 		offset = MAPPING_OFFSET + strlen(words[1]);
 		memcpy(mapping, buffer + offset, strlen(buffer + offset) + 1);
+		// printf("after memcpy, mapping = [%s]", mapping);
 		mapping[strlen(buffer + offset) - 1] = '\0';
+		// printf("before trim, mapping = [%s]", mapping);
 		trim_whitespace(mapping);
+		// printf("after trim, mapping = [%s]", mapping);
 
 		while (buffer[strlen(buffer) - 2] == '\\') {
 			fgets(buffer, MAXBUF, fin);
@@ -314,6 +326,7 @@ int handle_define(
 		mapping[0] = '\0';
 	}
 
+	// printf("insert: symbol = [%s], mapping = [%s]\n", words[1], mapping);
 	r = insert_item(defmap, words[1], mapping);
 	return r;
 }
