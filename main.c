@@ -429,6 +429,7 @@ int main(int argc, char *argv[]) {
 	char **folders;
 	int folders_no;
 
+	printf("inainte de init");
 	int r = init(argc, argv, defmap, &fin, &fout, &folders, &folders_no);
 	printf("trece de init cu r = %d\n", r);
 	if (r) {
