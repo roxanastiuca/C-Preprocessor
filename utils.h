@@ -39,4 +39,7 @@ int replace_defines(hashmap_t *defmap, char *buffer,
 	char **words, int words_no);
 FILE *find_file(char *file, char **folders, int folders_no);
 
+int preprocess_file(hashmap_t *defmap, FILE *fin, FILE *fout,
+	char **folders, int folders_no, int condition);
+
 #endif

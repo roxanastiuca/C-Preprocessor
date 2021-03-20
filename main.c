@@ -1,8 +1,5 @@
 #include "utils.h"
 
-int preprocess_file(hashmap_t *defmap, FILE *fin, FILE *fout,
-	char **folders, int folders_no, int condition);
-
 /*
  * Description: initiates program, by parssing command line arguments and
  initializing files and the array of folders.
