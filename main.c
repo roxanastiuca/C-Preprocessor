@@ -1,17 +1,17 @@
 #include "utils.h"
 
-void free_string_vector(char **vect, int len) {
+void free_string_vector(char **vect, int len)
+{
 	int i;
 
-	for (i = 0; i < len; i++) {
-		if (vect[i] != NULL) {
+	for (i = 0; i < len; i++)
+		if (vect[i] != NULL)
 			free(vect[i]);
-		}
-	}
 	free(vect);
 }
 
-int extract_define(char *str, char **ref_symbol, char **ref_mapping) {
+int extract_define(char *str, char **ref_symbol, char **ref_mapping)
+{
 	char *p;
 
 	if ((p = strchr(str, '=')) != NULL) {
@@ -28,7 +28,8 @@ int extract_define(char *str, char **ref_symbol, char **ref_mapping) {
 	return 0;
 }
 
-void trim_whitespace(char *str) { /* :) and backslash */
+void trim_whitespace(char *str) /* :) and backslash */
+{
 	char aux[MAXBUF];
 	char *start;
 	int i;
@@ -40,15 +41,14 @@ void trim_whitespace(char *str) { /* :) and backslash */
 		start++;
 
 	i = strlen(start) - 1;
-	while (i > 0 && (isspace(start[i]))) {
-		/* start[i] = '\0'; */
+	while (i > 0 && (isspace(start[i])))
 		i--;
-	}
 
 	memcpy(str, start, strlen(start) + 1);
 }
 
-int extract_words(char *str, char ***ref_words, int *words_no) {
+int extract_words(char *str, char ***ref_words, int *words_no)
+{
 	char buffer[MAXBUF];
 	char **words, *token, **words_aux;
 	int capacity, idx;
@@ -101,8 +101,8 @@ int init(
 	int argc, char *argv[],
 	hashmap_t *defmap,
 	FILE **fin, FILE **fout,
-	char ***folders, int *folders_no
-	) {
+	char ***folders, int *folders_no)
+{
 
 	char *input_file = NULL, *symbol, *mapping, *output_file, **folders_aux, *dir;
 	int r, i, capacity = SIZEMIN;
@@ -204,14 +204,16 @@ int init(
 	return 0;
 }
 
-void end_program(hashmap_t *map, FILE *fin, FILE *fout, char **folders, int folders_no) {
+void end_program(hashmap_t *map, FILE *fin, FILE *fout, char **folders, int folders_no)
+{
 	free_hashmap(map);
 	if (fin != NULL)	fclose(fin);
 	if (fout != NULL)	fclose(fout);
 	free_string_vector(folders, folders_no);
 }
 
-int between_quotations(char *buffer, char *pos) {
+int between_quotations(char *buffer, char *pos)
+{
 	char *left_mark, *aux;
 	int marks_no = 0;
 
@@ -234,8 +236,8 @@ int between_quotations(char *buffer, char *pos) {
 
 int replace_defines(
 	hashmap_t *defmap,
-	char *buffer, char **words, int words_no
-	) {
+	char *buffer, char **words, int words_no)
+{
 
 	int start, offset, replaces, i;
 	char to_print[MAXBUF];
@@ -305,8 +307,8 @@ int handle_define(
 	FILE *fin,
 	hashmap_t *defmap,
 	char *buffer,
-	char **words, int words_no
-	) {
+	char **words, int words_no)
+{
 
 	char mapping[MAXBUF];
 	char aux[MAXBUF];
@@ -338,7 +340,8 @@ int handle_define(
 	return r;
 }
 
-FILE *find_file(char *file, char **folders, int folders_no) {
+FILE *find_file(char *file, char **folders, int folders_no)
+{
 	char path[MAXBUF];
 	FILE *fd;
 	int i;
@@ -362,8 +365,8 @@ int handle_directive(
 	char **folders, int folders_no,
 	hashmap_t *defmap,
 	char *buffer, char **words, int words_no,
-	int *condition
-	) {
+	int *condition)
+{
 
 	int r = 0;
 	int cond;
@@ -404,8 +407,8 @@ int preprocess_file(
 	hashmap_t *defmap,
 	FILE *fin, FILE *fout,
 	char **folders, int folders_no,
-	int condition
-	) {
+	int condition)
+{
 
 	int r = 0;
 
@@ -449,7 +452,8 @@ int preprocess_file(
 	return r;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	hashmap_t *defmap;
 	FILE *fin, *fout;
 	char **folders;

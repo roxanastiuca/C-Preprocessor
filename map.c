@@ -29,7 +29,7 @@ list_t new_node(char *symbol, char *mapping)
 	return node;
 }
 
-hashmap_t *new_hashmap()
+hashmap_t *new_hashmap(void)
 {
 	hashmap_t *map = (hashmap_t *) calloc(1, sizeof(hashmap_t));
 
