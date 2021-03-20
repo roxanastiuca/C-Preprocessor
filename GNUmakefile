@@ -1,8 +1,18 @@
 
 all: build
 
-build:
-	gcc -o so-cpp main.c map.c utils.c
+build: main.o map.o utils.o
+	gcc -o so-cpp main.o map.o utils.o
 
+main.o: main.c
+	gcc -Wall -c main.c
+
+map.o: map.c
+	gcc -Wall -c map.c
+
+utils.o: utils.c
+	gcc -Wall -c utils.c
+
+.PHONY: clean
 clean:
-	rm -rf so-cpp
+	rm -f main.o map.o utils.o so-cpp

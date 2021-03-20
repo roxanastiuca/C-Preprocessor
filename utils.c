@@ -20,7 +20,6 @@ void trim_whitespace(char *str)
 {
 	char aux[MAXBUF];
 	char *start;
-	int i;
 
 	memcpy(aux, str, strlen(str) + 1);
 
