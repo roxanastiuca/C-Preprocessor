@@ -1,7 +1,7 @@
 all: build
 
 build:
-	cl /Feso-cpp.exe main.c map.c /MD
+	cl /Feso-cpp.exe main.c map.c utils.c /MD
 
 .PHONY: clean
 

@@ -1,5 +1,9 @@
 #include "map.h"
 
+/*
+ * Description: allocates memory for a new list node and its components.
+ * Output is NULL if any memory allocations fail.
+ */
 list_t new_node(char *symbol, char *mapping)
 {
 	list_t node = (list_t) malloc(sizeof(node_t));
@@ -29,6 +33,10 @@ list_t new_node(char *symbol, char *mapping)
 	return node;
 }
 
+/*
+ * Description: creates new empty hashmap.
+ * Output is NULL when memory allocation fails.
+ */
 hashmap_t *new_hashmap(void)
 {
 	hashmap_t *map = (hashmap_t *) calloc(1, sizeof(hashmap_t));
@@ -41,6 +49,10 @@ hashmap_t *new_hashmap(void)
 	return map;
 }
 
+/*
+ * Description: updates a list item with new value for field 'mapping'.
+ * Output: 0 for no error, -ENOMEM.
+ */
 int update_item(list_t item, char *mapping)
 {
 	free(item->mapping);
@@ -48,7 +60,7 @@ int update_item(list_t item, char *mapping)
 	item->mapping = (char *) calloc(1 + strlen(mapping), sizeof(char));
 	if (!item->mapping) {
 		fprintf(stderr, "Not enough memory for mapping.\n");
-		return ENOMEM;
+		return -ENOMEM;
 	}
 
 	memcpy(item->mapping, mapping, 1 + strlen(mapping));
@@ -56,9 +68,16 @@ int update_item(list_t item, char *mapping)
 	return 0;
 }
 
+/*
+ * Description: inserts a new item in the map, by placing it at the end of
+ the list. However, if the symbol already exists, it just updates its
+ mapping.
+ * Output: 0 for no error, -ENOMEM.
+ */
 int insert_item(hashmap_t *map, char *symbol, char *mapping)
 {
-	list_t last_item = NULL, item = map->items;
+	list_t last_item = NULL; /* pointer to last item in list */
+	list_t item = map->items;
 	list_t new_item;
 
 	/* Check if symbol already exists. Update it if so. */
@@ -72,7 +91,7 @@ int insert_item(hashmap_t *map, char *symbol, char *mapping)
 	new_item = new_node(symbol, mapping);
 	if (!new_item) {
 		fprintf(stderr, "Not enough memory for new hashmap item.\n");
-		return ENOMEM;
+		return -ENOMEM;
 	}
 
 	if (last_item == NULL)
@@ -85,27 +104,26 @@ int insert_item(hashmap_t *map, char *symbol, char *mapping)
 	return 0;
 }
 
-
-int delete_item(hashmap_t* map, char *symbol)
+/*
+ * Description: deletes an item from the map.
+ * Output: 0 for no error, -1 for symbol not found.
+ */
+int delete_item(hashmap_t *map, char *symbol)
 {
 	list_t last_item = NULL, item = map->items;
 
 	/* Search for symbol. */
-	for (; item != NULL; last_item = item, item = item->next) {
-		if (strcmp(symbol, item->symbol) == 0) {
+	for (; item != NULL; last_item = item, item = item->next)
+		if (strcmp(symbol, item->symbol) == 0)
 			break;
-		}
-	}
 
-	if (item == NULL) {
+	if (item == NULL)
 		return -1; /* item not found; */
-	}
 
-	if (last_item == NULL) {
-		map->items = item->next; /* Item is first in list. */
-	} else {
+	if (last_item == NULL)
+		map->items = item->next; /* item was first in list */
+	else
 		last_item->next = item->next;
-	}
 
 	free(item->symbol);
 	free(item->mapping);
@@ -116,7 +134,11 @@ int delete_item(hashmap_t* map, char *symbol)
 	return 0;
 }
 
-char* get_mapping(hashmap_t *map, char *symbol)
+/*
+ * Description: returns mapping of a given symbol in the map or NULL
+ if symbol is not found.
+ */
+char *get_mapping(hashmap_t *map, char *symbol)
 {
 	list_t item;
 
@@ -127,6 +149,9 @@ char* get_mapping(hashmap_t *map, char *symbol)
 	return NULL;
 }
 
+/*
+ * Description: frees memory for map.
+ */
 void free_hashmap(hashmap_t *map)
 {
 	list_t item = map->items, aux;
