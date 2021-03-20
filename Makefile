@@ -1,15 +1,15 @@
 all: build
 
-build: main.o map.o utils.o
-	cl /Feso-cpp.exe main.o map.o utils.o /MD
+build: main.obj map.obj utils.obj
+	cl /Feso-cpp.exe main.obj map.obj utils.obj /MD
 
-main.o: main.c
+main.obj: main.c
 	cl /c main.c /MD
 
-map.o: map.c
+map.obj: map.c
 	cl /c map.c /MD
 
-utils.o: utils.c
+utils.obj: utils.c
 	cl /c utils.c /MD
 
 .PHONY: clean
