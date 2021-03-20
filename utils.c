@@ -33,7 +33,7 @@ void trim_whitespace(char *str)
 
 /*
  * Description: extracts all words in a string using a list of delimiters.
- * Output: 0 for no error, -ENOMEM.
+ * Output: 0 for no error, ENOMEM.
  */
 int extract_words(char *str, char ***ref_words, int *words_no)
 {
@@ -47,7 +47,7 @@ int extract_words(char *str, char ***ref_words, int *words_no)
 	words = (char **) calloc(SIZEMIN, sizeof(char *));
 	if (!words) {
 		fprintf(stderr, "Not enough memory for words.\n");
-		return -ENOMEM;
+		return ENOMEM;
 	}
 
 	capacity = SIZEMIN;
@@ -65,7 +65,7 @@ int extract_words(char *str, char ***ref_words, int *words_no)
 				free_string_vector(words, idx);
 				fprintf(stderr,
 					"Not enough memory for realloc.\n");
-				return -ENOMEM;
+				return ENOMEM;
 			}
 			capacity *= 2;
 			words = words_aux;
@@ -75,7 +75,7 @@ int extract_words(char *str, char ***ref_words, int *words_no)
 		if (words[idx] == NULL) {
 			free_string_vector(words, idx);
 			fprintf(stderr, "Not enough memory for word.\n");
-			return -ENOMEM;
+			return ENOMEM;
 		}
 		memcpy(words[idx++], token, strlen(token));
 		token = strtok(NULL, DELIMLIST);
