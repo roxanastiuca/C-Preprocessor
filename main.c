@@ -1,6 +1,7 @@
 #include "utils.h"
 
-int preprocess_file(hashmap_t*, FILE*, FILE*, char**, int, int);
+int preprocess_file(hashmap_t *defmap, FILE *fin, FILE *fout,
+	char **folders, int folders_no, int condition)
 
 /*
  * Description: initiates program, by parssing command line arguments and
@@ -216,23 +217,28 @@ int handle_directive(
 		delete_item(defmap, words[1]);
 	} else if (*condition && strcmp(words[0], IF_DIRECTIVE) == 0) {
 		cond = (strcmp(words[1], "0") == 0) ? 0 : 1;
-		r = preprocess_file(defmap, fin, fout, folders, folders_no, cond);
+		r = preprocess_file(defmap, fin, fout, folders, folders_no,
+			cond);
 	} else if (strcmp(words[0], ELSE_DIRECTIVE) == 0) {
 		*condition = *condition ? 0 : 1;
 	} else if (strcmp(words[0], ELIF_DIRECTIVE) == 0) {
-		*condition = *condition ? 0 : (strcmp(words[1], "0") == 0) ? 0 : 1;
+		*condition =
+			*condition ? 0 : (strcmp(words[1], "0") == 0) ? 0 : 1;
 	} else if (*condition && strcmp(words[0], IFDEF_DIRECTIVE) == 0) {
 		cond = (get_mapping(defmap, words[1]) == NULL) ? 0 : 1;
-		r = preprocess_file(defmap, fin, fout, folders, folders_no, cond);
+		r = preprocess_file(defmap, fin, fout, folders, folders_no,
+			cond);
 	} else if (*condition && strcmp(words[0], IFNDEF_DIRECTIVE) == 0) {
 		cond = (get_mapping(defmap, words[1]) != NULL) ? 0 : 1;
-		r = preprocess_file(defmap, fin, fout, folders, folders_no, cond);
+		r = preprocess_file(defmap, fin, fout, folders, folders_no,
+			cond);
 	} else if (*condition && strcmp(words[0], INCLUDE_DIRECTIVE) == 0) {
 		file = find_file(words[1], folders, folders_no);
 		if (file == NULL)
 			return ENOENT;
 
-		r = preprocess_file(defmap, file, fout, folders, folders_no, 1);
+		r = preprocess_file(defmap, file, fout,
+			folders, folders_no, 1);
 		fprintf(fout, "\n");
 		fclose(file);
 	}
