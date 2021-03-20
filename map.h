@@ -6,7 +6,7 @@
 typedef struct node {
 	char *symbol;
 	char *mapping;
-  	struct node *next;
+	struct node *next;
 } node_t, *list_t;
 
 list_t new_node(char *symbol, char *mapping);
@@ -16,7 +16,7 @@ typedef struct {
 	int items_no;
 } hashmap_t;
 
-hashmap_t* new_hashmap();
+hashmap_t *new_hashmap(void);
 void free_hashmap(hashmap_t *map);
 int insert_item(hashmap_t *map, char *symbol, char *mapping);
 int delete_item(hashmap_t *map, char *symbol);

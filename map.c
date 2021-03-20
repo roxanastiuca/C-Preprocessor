@@ -1,6 +1,7 @@
 #include "map.h"
 
-list_t new_node(char *symbol, char *mapping) {
+list_t new_node(char *symbol, char *mapping)
+{
 	list_t node = (list_t) malloc(sizeof(node_t));
 
 	if (node) {
@@ -28,8 +29,9 @@ list_t new_node(char *symbol, char *mapping) {
 	return node;
 }
 
-hashmap_t* new_hashmap() {
-	hashmap_t* map = (hashmap_t *) calloc(1, sizeof(hashmap_t));
+hashmap_t *new_hashmap()
+{
+	hashmap_t *map = (hashmap_t *) calloc(1, sizeof(hashmap_t));
 
 	if (map) {
 		map->items = NULL;
@@ -39,7 +41,8 @@ hashmap_t* new_hashmap() {
 	return map;
 }
 
-int update_item(list_t item, char *mapping) {
+int update_item(list_t item, char *mapping)
+{
 	free(item->mapping);
 
 	item->mapping = (char *) calloc(1 + strlen(mapping), sizeof(char));
@@ -53,7 +56,8 @@ int update_item(list_t item, char *mapping) {
 	return 0;
 }
 
-int insert_item(hashmap_t* map, char *symbol, char *mapping) {
+int insert_item(hashmap_t *map, char *symbol, char *mapping)
+{
 	list_t last_item = NULL, item = map->items;
 	list_t new_item;
 
@@ -71,11 +75,10 @@ int insert_item(hashmap_t* map, char *symbol, char *mapping) {
 		return ENOMEM;
 	}
 
-	if (last_item == NULL) {
+	if (last_item == NULL)
 		map->items = new_item; /* First insertion in list. */
-	} else {
+	else
 		last_item->next = new_item; /* Insertion at end of list. */
-	}
 
 	map->items_no++;
 
@@ -83,7 +86,8 @@ int insert_item(hashmap_t* map, char *symbol, char *mapping) {
 }
 
 
-int delete_item(hashmap_t* map, char *symbol) {
+int delete_item(hashmap_t* map, char *symbol)
+{
 	list_t last_item = NULL, item = map->items;
 
 	/* Search for symbol. */
@@ -112,19 +116,19 @@ int delete_item(hashmap_t* map, char *symbol) {
 	return 0;
 }
 
-char* get_mapping(hashmap_t *map, char *symbol) {
+char* get_mapping(hashmap_t *map, char *symbol)
+{
 	list_t item;
 
-	for (item = map->items; item != NULL; item = item->next) {
-		if (strcmp(symbol, item->symbol) == 0) {
+	for (item = map->items; item != NULL; item = item->next)
+		if (strcmp(symbol, item->symbol) == 0)
 			return item->mapping;
-		}
-	}
 
 	return NULL;
 }
 
-void free_hashmap(hashmap_t *map) {
+void free_hashmap(hashmap_t *map)
+{
 	list_t item = map->items, aux;
 
 	while (item != NULL) {
@@ -138,13 +142,3 @@ void free_hashmap(hashmap_t *map) {
 
 	free(map);
 }
-
-// /* DEBUG ONLY */
-// #include <stdio.h>
-// void print_map(hashmap_t *map) {
-// 	printf("map:\n");
-// 	list_t item;
-// 	for (item = map->items; item != NULL; item = item->next) {
-// 		printf("[%s:%s]\n", item->symbol, item->mapping);
-// 	}
-// }
