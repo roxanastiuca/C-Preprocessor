@@ -19,7 +19,7 @@ structurilor necesare.
 - **preprocess_file**: parsarea inputului si rezolvarea directivelor; pt.
 directive conditionale sau pt. #include, functia se va auto-apela. Adica
 pt. un input ca acesta:
-1	#if CEVA
+`1	#if CEVA
 2		#if ALTCEVA1
 3		...
 4		#elif ALTCEVA2
@@ -27,7 +27,7 @@ pt. un input ca acesta:
 6		#else
 7		...
 8	#else
-9	...
+9	...`
 liniile 1,8,9 apartin unui apel al functiei; liniile 2,3,4,6,7 apartin
 unui apel suplimentar (in care conditition depinde de ALTCEVA1,ALTCEVA2);
 linia 6 si tot ce exista in file.h apartin unui alt apel suplimentar.
@@ -46,7 +46,7 @@ normal sau cu eroare.
 ### Implementare
 Este implementat intreg enuntul.
 
-##### Implementare "hashmap"
+#### Implementare "hashmap"
 Abordarea nu foloseste o functie de hash si are complexitatea O(N) pt.
 inserare, stergere, gasire.
 Este implementat ca o lista simplu inaltuita. Inserarea se face la finalul
@@ -66,8 +66,8 @@ o directiva conditionala care s-a evaluat pe false; deci codul de sub nu se
 evalueaza). Daca nu este o directiva, afisam linia (daca condition nu e 0).
 
 ### Cum se compileaza si cum se ruleaza?
-**Compilare**: Linux - make / make build; Windows - nmake.
-**Rulare**:
+- **Compilare**: Linux - make / make build; Windows - nmake.
+- **Rulare**:
 `./so-cpp [-D <SYMBOL>[=<MAPPING>]] [-I <DIR>] [<INFILE>] [[-o] <OUTFILE>]`
 
 ### Observatii finale
