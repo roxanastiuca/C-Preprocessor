@@ -3,7 +3,7 @@
 /*
  * Description: initiates program, by parssing command line arguments and
  initializing files and the array of folders.
- * Output: 0 for no error, -ENOMEM, ENOENT, EINVAL.
+ * Output: 0 for no error, -ENOMEM, -ENOENT, -EINVAL.
  */
 int init(
 	int argc, char *argv[],
@@ -56,7 +56,7 @@ int init(
 
 			*fout = fopen(output_file, "wt");
 			if (!*fout)
-				return ENOENT;
+				return -ENOENT;
 		} else if (strncmp(argv[i], I_ARG, strlen(I_ARG)) == 0) {
 			if (*folders_no == capacity) {
 				/* Array requires more space. */
@@ -103,7 +103,7 @@ int init(
 					return ENOENT;
 			} else {
 				/* No third positional argument accepted. */
-				return EINVAL;
+				return -EINVAL;
 			}
 		}
 	}
