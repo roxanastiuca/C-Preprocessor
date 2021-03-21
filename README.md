@@ -19,7 +19,8 @@ structurilor necesare.
 - **preprocess_file**: parsarea inputului si rezolvarea directivelor; pt.
 directive conditionale sau pt. #include, functia se va auto-apela. Adica
 pt. un input ca acesta:
-`1	#if CEVA
+```
+1	#if CEVA
 2		#if ALTCEVA1
 3		...
 4		#elif ALTCEVA2
@@ -27,7 +28,8 @@ pt. un input ca acesta:
 6		#else
 7		...
 8	#else
-9	...`
+9	...
+```
 liniile 1,8,9 apartin unui apel al functiei; liniile 2,3,4,6,7 apartin
 unui apel suplimentar (in care conditition depinde de ALTCEVA1,ALTCEVA2);
 linia 6 si tot ce exista in file.h apartin unui alt apel suplimentar.
