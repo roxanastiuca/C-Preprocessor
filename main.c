@@ -95,12 +95,12 @@ int init(
 				input_file = argv[i];
 				*fin = fopen(input_file, "rt");
 				if (!*fin)
-					return ENOENT;
+					return -ENOENT;
 			} else if (*fout == stdout) {
 				/* Second possible positional argument. */
 				*fout = fopen(argv[i], "wt");
 				if (!*fout)
-					return ENOENT;
+					return -ENOENT;
 			} else {
 				/* No third positional argument accepted. */
 				return -EINVAL;
@@ -232,7 +232,7 @@ int handle_directive(
 	} else if (*condition && strcmp(words[0], INCLUDE_DIRECTIVE) == 0) {
 		file = find_file(words[1], folders, folders_no);
 		if (file == NULL)
-			return ENOENT;
+			return -ENOENT;
 
 		r = preprocess_file(defmap, file, fout,
 			folders, folders_no, 1);
