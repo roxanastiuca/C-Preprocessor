@@ -68,7 +68,7 @@ evalueaza). Daca nu este o directiva, afisam linia (daca condition nu e 0).
 ### Cum se compileaza si cum se ruleaza?
 **Compilare**: Linux - make / make build; Windows - nmake.
 **Rulare**:
-./so-cpp[.exe] [-D <SYMBOL>[=<MAPPING>]] [-I <DIR>] [<INFILE>] [[-o] <OUTFILE>]
+`./so-cpp [-D <SYMBOL>[=<MAPPING>]] [-I <DIR>] [<INFILE>] [[-o] <OUTFILE>]`
 
 ### Observatii finale
 Am invatat foarte putine despre SO. 95% din tema a fost procesare de stringuri
