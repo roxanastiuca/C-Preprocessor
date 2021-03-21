@@ -51,7 +51,7 @@ hashmap_t *new_hashmap(void)
 
 /*
  * Description: updates a list item with new value for field 'mapping'.
- * Output: 0 for no error, ENOMEM.
+ * Output: 0 for no error, -ENOMEM.
  */
 int update_item(list_t item, char *mapping)
 {
@@ -60,7 +60,7 @@ int update_item(list_t item, char *mapping)
 	item->mapping = (char *) calloc(1 + strlen(mapping), sizeof(char));
 	if (!item->mapping) {
 		fprintf(stderr, "Not enough memory for mapping.\n");
-		return ENOMEM;
+		return -ENOMEM;
 	}
 
 	memcpy(item->mapping, mapping, 1 + strlen(mapping));
@@ -72,7 +72,7 @@ int update_item(list_t item, char *mapping)
  * Description: inserts a new item in the map, by placing it at the end of
  the list. However, if the symbol already exists, it just updates its
  mapping.
- * Output: 0 for no error, ENOMEM.
+ * Output: 0 for no error, -ENOMEM.
  */
 int insert_item(hashmap_t *map, char *symbol, char *mapping)
 {
@@ -91,7 +91,7 @@ int insert_item(hashmap_t *map, char *symbol, char *mapping)
 	new_item = new_node(symbol, mapping);
 	if (!new_item) {
 		fprintf(stderr, "Not enough memory for new hashmap item.\n");
-		return ENOMEM;
+		return -ENOMEM;
 	}
 
 	if (last_item == NULL)

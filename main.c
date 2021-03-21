@@ -3,7 +3,7 @@
 /*
  * Description: initiates program, by parssing command line arguments and
  initializing files and the array of folders.
- * Output: 0 for no error, ENOMEM, ENOENT, EINVAL.
+ * Output: 0 for no error, -ENOMEM, ENOENT, EINVAL.
  */
 int init(
 	int argc, char *argv[],
@@ -21,7 +21,7 @@ int init(
 
 	*folders = (char **) calloc(SIZEMIN, sizeof(char *));
 	if (!*folders)
-		return ENOMEM;
+		return -ENOMEM;
 
 	/* Reserve first spot for input file folder/current folder (this has
 	 * the highest priority when searching for a file):
@@ -65,7 +65,7 @@ int init(
 				if (folders_aux == NULL) {
 					fprintf(stderr,
 					"Not enough memory for realloc.\n");
-					return ENOMEM;
+					return -ENOMEM;
 				}
 				capacity *= 2;
 				*folders = folders_aux;
@@ -85,7 +85,7 @@ int init(
 			if ((*folders)[*folders_no] == NULL) {
 				fprintf(stderr,
 					"Not enough memory for folder.\n");
-				return ENOMEM;
+				return -ENOMEM;
 			}
 
 			memcpy((*folders)[(*folders_no)++], dir, strlen(dir));
@@ -113,7 +113,7 @@ int init(
 		(*folders)[0] = (char *) calloc(2, sizeof(char));
 		if ((*folders)[0] == NULL) {
 			fprintf(stderr, "Not enough memory for folder 0.\n");
-			return ENOMEM;
+			return -ENOMEM;
 		}
 		strcpy((*folders)[0], ".");
 	} else {
@@ -125,7 +125,7 @@ int init(
 			if ((*folders)[0] == NULL) {
 				fprintf(stderr,
 					"Not enough memory for folder 0.\n");
-				return ENOMEM;
+				return -ENOMEM;
 			}
 			strcpy((*folders)[0], ".");
 		} else {
@@ -135,7 +135,7 @@ int init(
 			if ((*folders)[0] == NULL) {
 				fprintf(stderr,
 					"Not enough memory for folder 0.\n");
-				return ENOMEM;
+				return -ENOMEM;
 			}
 			strcpy((*folders)[0], input_file);
 		}
@@ -147,7 +147,7 @@ int init(
 /*
  * Description: handles a #define directive. Adds symbol and mapping to
  map.
- * Output: 0 for no error, ENOMEM.
+ * Output: 0 for no error, -ENOMEM.
  */
 int handle_define(
 	FILE *fin,
@@ -192,7 +192,7 @@ int handle_define(
  * Description: buffer contains a directive which has to be handled.
  Ignore certain directives if *condition is not true (it means we are in
  a section of code after a conditional directive which evaluated to false).
- * Output: 0 for no error, ENOMEM.
+ * Output: 0 for no error, -ENOMEM.
  */
 int handle_directive(
 	FILE *fin, FILE *fout,
@@ -248,7 +248,7 @@ int handle_directive(
  and replacing defines. Conditional directives are resolved in their own
  call of this function. Variable 'condition' is 0 if we are in a section of
  code after a conditional directive which evaluated to false.
- Output: 0 for no error, ENOMEM.
+ Output: 0 for no error, -ENOMEM.
  */
 int preprocess_file(
 	hashmap_t *defmap,
@@ -328,19 +328,19 @@ int main(int argc, char *argv[])
 	defmap = new_hashmap();
 	if (!defmap) {
 		fprintf(stderr, "Not enough memory for hashmap.\n");
-		return ENOMEM;
+		return -ENOMEM;
 	}
 
 	r = init(argc, argv, defmap, &fin, &fout, &folders, &folders_no);
 	if (r) {
 		end_program(defmap, fin, fout, folders, folders_no);
-		return r;
+		return -r;
 	}
 
 	r = preprocess_file(defmap, fin, fout, folders, folders_no, 1);
 	if (r) {
 		end_program(defmap, fin, fout, folders, folders_no);
-		return r;
+		return -r;
 	}
 
 	end_program(defmap, fin, fout, folders, folders_no);
