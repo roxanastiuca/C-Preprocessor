@@ -328,7 +328,8 @@ int main(int argc, char *argv[])
 	defmap = new_hashmap();
 	if (!defmap) {
 		fprintf(stderr, "Not enough memory for hashmap.\n");
-		return -ENOMEM;
+		r = ENOMEM;
+		return r;
 	}
 
 	r = init(argc, argv, defmap, &fin, &fout, &folders, &folders_no);
