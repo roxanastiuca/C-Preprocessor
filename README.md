@@ -72,6 +72,25 @@ evalueaza). Daca nu este o directiva, afisam linia (daca condition nu e 0).
 - **Rulare**:
 `./so-cpp [-D <SYMBOL>[=<MAPPING>]] [-I <DIR>] [<INFILE>] [[-o] <OUTFILE>]`
 
-### Observatii finale
-Am invatat foarte putine despre SO. 95% din tema a fost procesare de stringuri
-in C.
+### Git
+https://github.com/roxanastiuca/C-Preprocessor
+
+### Observatii
+In caz ca va intrebati de ce in main fac:
+`return -r;`
+sau 
+```
+r = ENOMEM;
+return r;
+```
+E pentru ca:
+- ni s-a cerut sa propagam codul de eroare pana in main, ceea ce fac;
+- testul 0 da failed cu:
+WARNING:USE_NEGATIVE_ERRNO: return of an errno should typically be negative,
+deci trebuie sa dau return -ENOMEM;
+- testul 38 da failed daca, in caz de eroare, intorci altceva in afara de 12,
+cum ar fi -12.
+
+Mentionez si ca eu am semnalat problema asta a checkerului, dar nu am primit
+nicio solutie mai eleganta:
+https://curs.upb.ro/mod/forum/discuss.php?d=60112
