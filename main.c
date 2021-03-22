@@ -62,11 +62,9 @@ int init(
 				/* Array requires more space. */
 				folders_aux = (char **) realloc(*folders,
 					(capacity * 2) * sizeof(char *));
-				if (folders_aux == NULL) {
-					fprintf(stderr,
-					"Not enough memory for realloc.\n");
+				if (folders_aux == NULL)
 					return -ENOMEM;
-				}
+
 				capacity *= 2;
 				*folders = folders_aux;
 			}
@@ -82,11 +80,8 @@ int init(
 
 			(*folders)[*folders_no] = (char *)
 				calloc(1 + strlen(dir), sizeof(char));
-			if ((*folders)[*folders_no] == NULL) {
-				fprintf(stderr,
-					"Not enough memory for folder.\n");
+			if ((*folders)[*folders_no] == NULL)
 				return -ENOMEM;
-			}
 
 			memcpy((*folders)[(*folders_no)++], dir, strlen(dir));
 		} else {
@@ -111,10 +106,9 @@ int init(
 	if (input_file == NULL) {
 		/* First folder to be checked is current working directory. */
 		(*folders)[0] = (char *) calloc(2, sizeof(char));
-		if ((*folders)[0] == NULL) {
-			fprintf(stderr, "Not enough memory for folder 0.\n");
+		if ((*folders)[0] == NULL)
 			return -ENOMEM;
-		}
+
 		strcpy((*folders)[0], ".");
 	} else {
 		/* First folder to be checked is folder where input file is. */
@@ -122,21 +116,17 @@ int init(
 
 		if (end_of_path == NULL) {
 			(*folders)[0] = (char *) calloc(2, sizeof(char));
-			if ((*folders)[0] == NULL) {
-				fprintf(stderr,
-					"Not enough memory for folder 0.\n");
+			if ((*folders)[0] == NULL)
 				return -ENOMEM;
-			}
+
 			strcpy((*folders)[0], ".");
 		} else {
 			*end_of_path = '\0';
 			(*folders)[0] = (char *) calloc(1 + strlen(input_file),
 				sizeof(char));
-			if ((*folders)[0] == NULL) {
-				fprintf(stderr,
-					"Not enough memory for folder 0.\n");
+			if ((*folders)[0] == NULL)
 				return -ENOMEM;
-			}
+
 			strcpy((*folders)[0], input_file);
 		}
 	}
@@ -327,7 +317,6 @@ int main(int argc, char *argv[])
 
 	defmap = new_hashmap();
 	if (!defmap) {
-		fprintf(stderr, "Not enough memory for hashmap.\n");
 		r = ENOMEM;
 		return r;
 	}

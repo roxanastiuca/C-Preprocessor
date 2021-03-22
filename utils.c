@@ -44,10 +44,8 @@ int extract_words(char *str, char ***ref_words, int *words_no)
 	memcpy(buffer, str, MAXBUF);
 
 	words = (char **) calloc(SIZEMIN, sizeof(char *));
-	if (!words) {
-		fprintf(stderr, "Not enough memory for words.\n");
+	if (!words)
 		return -ENOMEM;
-	}
 
 	capacity = SIZEMIN;
 	idx = 0;
@@ -62,8 +60,6 @@ int extract_words(char *str, char ***ref_words, int *words_no)
 			if (words_aux == NULL) {
 				/* free space for words */
 				free_string_vector(words, idx);
-				fprintf(stderr,
-					"Not enough memory for realloc.\n");
 				return -ENOMEM;
 			}
 			capacity *= 2;
@@ -73,7 +69,6 @@ int extract_words(char *str, char ***ref_words, int *words_no)
 		words[idx] = (char *) calloc(1 + strlen(token), sizeof(char));
 		if (words[idx] == NULL) {
 			free_string_vector(words, idx);
-			fprintf(stderr, "Not enough memory for word.\n");
 			return -ENOMEM;
 		}
 		memcpy(words[idx++], token, strlen(token));
